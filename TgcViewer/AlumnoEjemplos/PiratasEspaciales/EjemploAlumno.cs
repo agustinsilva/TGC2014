@@ -174,11 +174,11 @@ namespace AlumnoEjemplos.MiGrupo
             int valor = (int)GuiController.Instance.UserVars.getValue("variablePrueba");
 
             string filePath = (string)GuiController.Instance.Modifiers["MP3-File"];
-            LoadMp3(filePath);
+            //LoadMp3(filePath);
 
-            TgcMp3Player player = GuiController.Instance.Mp3Player;
-            TgcMp3Player.States currentState = player.getStatus();
-            GuiController.Instance.Mp3Player.play(true);
+            //TgcMp3Player player = GuiController.Instance.Mp3Player;
+            //TgcMp3Player.States currentState = player.getStatus();
+            //player.play(true);
             //Obtener valores de Modifiers
             float valorFloat = (float)GuiController.Instance.Modifiers["valorFloat"];
             string opcionElegida = (string)GuiController.Instance.Modifiers["valorIntervalo"];

@@ -13,3 +13,6 @@ C:\Users\Agustin\Downloads\TgcViewer - 2014-1C\TgcViewer\TgcViewer\obj\Debug\Tgc
 C:\Users\Agustin\Downloads\TgcViewer - 2014-1C\TgcViewer\TgcViewer\obj\Debug\TgcViewer.pdb
 C:\Users\Agustin\Downloads\TgcViewer - 2014-1C\TgcViewer\TgcViewer.exe
 C:\Users\Agustin\Downloads\TgcViewer - 2014-1C\TgcViewer\TgcViewer.pdb
+C:\Users\Agustin\Desktop\TGC2014\TgcViewer\TgcViewer.exe.config
+C:\Users\Agustin\Desktop\TGC2014\TgcViewer\TgcViewer\obj\Debug\TgcViewer.exe
+C:\Users\Agustin\Desktop\TGC2014\TgcViewer\TgcViewer\obj\Debug\TgcViewer.pdb
