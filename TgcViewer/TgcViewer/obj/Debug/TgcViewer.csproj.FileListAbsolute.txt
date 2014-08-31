@@ -1,0 +1,15 @@
+C:\Users\Agustin\Downloads\TgcViewer - 2014-1C\TgcViewer\TgcViewer\obj\Debug\TgcViewer.MainForm.resources
+C:\Users\Agustin\Downloads\TgcViewer - 2014-1C\TgcViewer\TgcViewer\obj\Debug\TgcViewer.Properties.Resources.resources
+C:\Users\Agustin\Downloads\TgcViewer - 2014-1C\TgcViewer\TgcViewer\obj\Debug\TgcViewer.Utils.Modifiers.TgcMeshBrowser.resources
+C:\Users\Agustin\Downloads\TgcViewer - 2014-1C\TgcViewer\TgcViewer\obj\Debug\TgcViewer.Utils.Modifiers.TgcTextureBrowser.resources
+C:\Users\Agustin\Downloads\TgcViewer - 2014-1C\TgcViewer\TgcViewer\obj\Debug\TgcViewer.Utils.Networking.TgcNetworkingModifierClientsDialog.resources
+C:\Users\Agustin\Downloads\TgcViewer - 2014-1C\TgcViewer\TgcViewer\obj\Debug\TgcViewer.Utils.Networking.TgcNetworkingModifierControl.resources
+C:\Users\Agustin\Downloads\TgcViewer - 2014-1C\TgcViewer\TgcViewer\obj\Debug\TgcViewer.Utils.Networking.TgcNetworkingModifierServersDialog.resources
+C:\Users\Agustin\Downloads\TgcViewer - 2014-1C\TgcViewer\TgcViewer\obj\Debug\TgcViewer.Utils.Ui.AboutWindow.resources
+C:\Users\Agustin\Downloads\TgcViewer - 2014-1C\TgcViewer\TgcViewer\obj\Debug\TgcViewer.Utils.Ui.FullScreenPanel.resources
+C:\Users\Agustin\Downloads\TgcViewer - 2014-1C\TgcViewer\TgcViewer\obj\Debug\TgcViewer.csproj.GenerateResource.Cache
+C:\Users\Agustin\Downloads\TgcViewer - 2014-1C\TgcViewer\TgcViewer.exe.config
+C:\Users\Agustin\Downloads\TgcViewer - 2014-1C\TgcViewer\TgcViewer\obj\Debug\TgcViewer.exe
+C:\Users\Agustin\Downloads\TgcViewer - 2014-1C\TgcViewer\TgcViewer\obj\Debug\TgcViewer.pdb
+C:\Users\Agustin\Downloads\TgcViewer - 2014-1C\TgcViewer\TgcViewer.exe
+C:\Users\Agustin\Downloads\TgcViewer - 2014-1C\TgcViewer\TgcViewer.pdb

@@ -1,0 +1,142 @@
+Lista de errores:
+
+Fin Errores
+
+//prueba de generacion automatica de shaders
+float4x4 g_mWorld;// : WORLD;
+float4x4 g_mViewProj;// : VIEWPROJECTION;
+float g_time;// : TIME;
+sampler2D texture0 : register(s0);
+sampler2D texture1 : register(s1);
+
+
+struct VSInput
+{
+	float4 Pos : POSITION;
+	float3 Normal : NORMAL;
+	float4 Color : COLOR;
+	float2 Tex0 : TEXCOORD0;
+	float2 Tex1 : TEXCOORD1;
+};
+
+
+struct PSInput
+{
+	float4 Pos : POSITION;
+	float3 Normal : NORMAL;
+	float4 Color : COLOR;
+	float2 Tex0 : TEXCOORD0;
+	float2 Tex1 : TEXCOORD1;
+};
+
+
+float square(float val)
+{ 
+	 return ( ((floor(val*2.0)+1.0) % 2.0) * 2.0) - 1.0;
+}
+float triangle(float val)
+{ 
+	 return abs(2.0 * frac(val) - 1.0);
+}
+
+
+PSInput VertexShader0(VSInput In)
+{
+	PSInput Out = In;
+	float4 defPosition = In.Pos;
+	float4 worldPosition = mul( defPosition, g_mWorld );
+	Out.Color = In.Color;
+	Out.Tex0 = In.Tex0;
+	Out.Pos = mul(worldPosition, g_mViewProj);
+	return Out;
+}
+
+
+float4 PixelShader0(PSInput In):COLOR
+{
+	float4 texColor = tex2D(texture0, In.Tex0);
+	float rgbWave = 0 + 1.0 - frac(0 + g_time * 10) * 1;
+	float3 rgb = texColor.rgb * rgbWave;
+	float alpha = texColor.a;
+	return float4(rgb, alpha);
+}
+
+
+PSInput VertexShader1(VSInput In)
+{
+	PSInput Out = In;
+	float4 defPosition = In.Pos;
+	float4 worldPosition = mul( defPosition, g_mWorld );
+	Out.Color = In.Color;
+	Out.Tex0 = In.Tex0;
+	Out.Pos = mul(worldPosition, g_mViewProj);
+	return Out;
+}
+
+
+float4 PixelShader1(PSInput In):COLOR
+{
+	float4 texColor = tex2D(texture0, In.Tex0);
+	float rgbWave = 0 + frac(0 + g_time * 10) * 1;
+	float3 rgb = texColor.rgb * rgbWave;
+	float alpha = texColor.a;
+	return float4(rgb, alpha);
+}
+
+
+PSInput VertexShader2(VSInput In)
+{
+	PSInput Out = In;
+	float4 defPosition = In.Pos;
+	float4 worldPosition = mul( defPosition, g_mWorld );
+	Out.Color = In.Color;
+	Out.Tex0 = In.Tex0;
+	Out.Pos = mul(worldPosition, g_mViewProj);
+	return Out;
+}
+
+
+float4 PixelShader2(PSInput In):COLOR
+{
+	float4 texColor = tex2D(texture0, In.Tex0);
+	float rgbWave = 0.6 + sin((0 + g_time * 0.6) * 6.283) * 0.2;
+	float3 rgb = texColor.rgb * rgbWave;
+	float alpha = texColor.a;
+	return float4(rgb, alpha);
+}
+
+
+technique tec0
+{
+	pass p0
+	{
+		AlphaBlendEnable = true;
+		SrcBlend = One;
+		DestBlend = One;
+		CullMode = none;
+		VertexShader = compile vs_3_0 VertexShader0();
+		PixelShader = compile ps_3_0 PixelShader0();
+	}
+
+
+	pass p1
+	{
+		AlphaBlendEnable = true;
+		SrcBlend = One;
+		DestBlend = One;
+		CullMode = none;
+		VertexShader = compile vs_3_0 VertexShader1();
+		PixelShader = compile ps_3_0 PixelShader1();
+	}
+
+
+	pass p2
+	{
+		AlphaBlendEnable = true;
+		SrcBlend = One;
+		DestBlend = One;
+		CullMode = none;
+		VertexShader = compile vs_3_0 VertexShader2();
+		PixelShader = compile ps_3_0 PixelShader2();
+	}
+}
