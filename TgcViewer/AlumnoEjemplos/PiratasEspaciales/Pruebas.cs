@@ -14,16 +14,16 @@ using Microsoft.DirectX.DirectInput;
 
 namespace AlumnoEjemplos.MiGrupo
 {
-    /// <summary>
-    /// Ejemplo del alumno
-    /// </summary>
     public class Pruebas : TgcExample
     {
-        TgcMesh nave;
-        TgcScene isla;
+        #region Inicializacion
 
         const float MOVEMENT_SPEED = 200f;
-        readonly Vector3 NAVE_SCALE = new Vector3(1, 1, 1);
+        const float ROTATION_SPEED = 30f;
+        readonly Vector3 NAVE_SCALE = new Vector3(0.2f, 0.2f, 0.2f);
+        
+        TgcMesh nave;
+        TgcScene universo;
 
         public override string getCategory()
         {
@@ -46,64 +46,111 @@ namespace AlumnoEjemplos.MiGrupo
 
             TgcSceneLoader loader = new TgcSceneLoader();
 
-            //isla = loader.loadSceneFromFile(GuiController.Instance.ExamplesMediaDir + "MeshCreator\\Scenes\\Isla\\Isla-TgcScene.xml");
-            isla = loader.loadSceneFromFile(GuiController.Instance.ExamplesMediaDir + "MeshCreator\\Scenes\\Ciudad\\Ciudad-TgcScene.xml");
+            universo = loader.loadSceneFromFile(GuiController.Instance.ExamplesMediaDir + "MeshCreator\\Scenes\\Universo\\Universo-TgcScene.xml");
             
             TgcScene scene_nave = loader.loadSceneFromFile(GuiController.Instance.ExamplesMediaDir + "MeshCreator\\Meshes\\Vehiculos\\AvionCaza\\AvionCaza-TgcScene.xml");
 
             nave = scene_nave.Meshes[0];
-            nave.move(0, 700, 0);
-
-            //nave.AutoTransformEnable = false;
-            
+            nave.Scale = NAVE_SCALE;
+                        
             GuiController.Instance.ThirdPersonCamera.Enable = true;
-            GuiController.Instance.ThirdPersonCamera.setCamera(nave.Position, 1000, 1000);
+            GuiController.Instance.ThirdPersonCamera.setCamera(nave.Position, 300, 300);
         }
+
+        #endregion
+
+        #region Renderizado
 
         public override void render(float elapsedTime)
         {
+            #region Controller
+
             Microsoft.DirectX.Direct3D.Device d3dDevice = GuiController.Instance.D3dDevice;
+
+            #endregion
+
+            #region Transformaciones
 
             //nave.Transform = Matrix.Scaling(NAVE_SCALE) * Matrix.Translation(0, 9000, 0);
             //nave.Transform = Matrix.Translation(0, 500, 0);
+            //nave.Transform = Matrix.Scaling(NAVE_SCALE);
 
+            #endregion
+
+            #region Movimiento y Rotacion
+
+            bool moving = false;
+            bool rotating = false;
+            float moveForward = 0f;
+            float rotate = 0;
             TgcD3dInput input = GuiController.Instance.D3dInput;
-            Vector3 movement = new Vector3(0, 0, 0);
+
+            //Vector3 movement = new Vector3(0, 0, 0);
             if (input.keyDown(Key.Left) || input.keyDown(Key.A))
             {
-                movement.X = 1;
+                rotate = -ROTATION_SPEED;
+                rotating = true;
             }
             else if (input.keyDown(Key.Right) || input.keyDown(Key.D))
             {
-                movement.X = -1;
+                rotate = ROTATION_SPEED;
+                rotating = true;
             }
             if (input.keyDown(Key.Up) || input.keyDown(Key.W))
             {
-                movement.Z = -1;
+                moveForward = -MOVEMENT_SPEED;
+                moving = true;
             }
             else if (input.keyDown(Key.Down) || input.keyDown(Key.S))
             {
-                movement.Z = 1;
+                moveForward = MOVEMENT_SPEED;
+                moving = true;
             }
 
-            //Aplicar movimiento
-            movement *= MOVEMENT_SPEED * elapsedTime;
-            nave.move(movement);
+
+            if (rotating)
+            {
+                nave.rotateY(Geometry.DegreeToRadian(rotate * elapsedTime));
+                GuiController.Instance.ThirdPersonCamera.rotateY(Geometry.DegreeToRadian(rotate * elapsedTime));
+            }
+            
+            if (moving)
+            {
+                Vector3 lastPos = nave.Position;
+                nave.moveOrientedY(moveForward * elapsedTime);
+            }
+                        
+            //Aplicar movimiento (VIEJO)
+            //movement *= MOVEMENT_SPEED * elapsedTime;
+            //nave.move(movement);
+
+            #endregion
+
+            #region Camara
 
             GuiController.Instance.ThirdPersonCamera.Target = nave.Position;
-          
+
+            #endregion
+
+            #region Render
+
             nave.render();
-            isla.renderAll();
-            
-            //Limpiamos todas las transformaciones con la Matrix identidad
-            //d3dDevice.Transform.World = Matrix.Identity;
+            universo.renderAll();
+
+            #endregion
+
         }
 
-       public override void close()
+        #endregion
+
+        #region Close / Dispose
+
+        public override void close()
         {
-            isla.disposeAll();
+            universo.disposeAll();
             nave.dispose();
         }
 
+        #endregion
     }
 }
