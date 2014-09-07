@@ -11,6 +11,7 @@ using TgcViewer.Utils.Modifiers;
 using TgcViewer.Utils.TgcSceneLoader;
 using TgcViewer.Utils.Sound;
 using System.IO;
+using TgcViewer.Utils._2D;
 using Device = Microsoft.DirectX.Direct3D.Device;
 
 namespace AlumnoEjemplos.MiGrupo
@@ -21,7 +22,7 @@ namespace AlumnoEjemplos.MiGrupo
     public class EjemploAlumno : TgcExample
     {
         string currentFile;
-
+        TgcText2d instruccionesText;
 
         const float VelocidadMovimiento = 200f;
         readonly Vector3 SUN_SCALE = new Vector3(12, 12, 12);
@@ -137,6 +138,11 @@ namespace AlumnoEjemplos.MiGrupo
             {
                 string element = lista[i];
             }
+            instruccionesText = new TgcText2d();
+            instruccionesText.Text = "Radio Y = Prender  O = Apagar.";
+            instruccionesText.Position = new Point(50, 60);
+            instruccionesText.Color = Color.Green;
+            instruccionesText.changeFont(new System.Drawing.Font(FontFamily.GenericMonospace, 16, FontStyle.Bold));
 
             GuiController.Instance.BackgroundColor = Color.Black;
             currentFile = null;
@@ -173,15 +179,33 @@ namespace AlumnoEjemplos.MiGrupo
             int valor = (int)GuiController.Instance.UserVars.getValue("variablePrueba");
 
             string filePath = (string)GuiController.Instance.Modifiers["MP3-File"];
-            //LoadMp3(filePath);
+            LoadMp3(filePath);
 
-            //TgcMp3Player player = GuiController.Instance.Mp3Player;
-            //TgcMp3Player.States currentState = player.getStatus();
-            //player.play(true);
-            //Obtener valores de Modifiers
+            TgcMp3Player player = GuiController.Instance.Mp3Player;
+            TgcMp3Player.States currentState = player.getStatus();
 
-
-
+            if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.Y))
+            {
+                if (currentState == TgcMp3Player.States.Open)
+                {
+                    //Reproducir MP3
+                    player.play(true);
+                }
+                if (currentState == TgcMp3Player.States.Stopped)
+                {
+                    //Parar y reproducir MP3
+                    player.closeFile();
+                    player.play(true);
+                }
+            }
+            else if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.O))
+            {
+                if (currentState == TgcMp3Player.States.Playing)
+                {
+                    //Parar el MP3
+                    player.stop();
+                }
+            }
             if (input.keyDown(Key.Left) || input.keyDown(Key.A))
             {
                 movimiento.X = 1;
@@ -204,6 +228,7 @@ namespace AlumnoEjemplos.MiGrupo
             //Limpiamos todas las transformaciones con la Matrix identidad
             sol.render();
             nave.render();
+            instruccionesText.render();
             d3dDevice.Transform.World = Matrix.Identity;
         }
 
