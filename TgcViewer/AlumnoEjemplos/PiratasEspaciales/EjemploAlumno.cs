@@ -1,15 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.DirectX.DirectInput;
 using TgcViewer.Example;
 using TgcViewer;
-using Microsoft.DirectX.Direct3D;
 using System.Drawing;
 using Microsoft.DirectX;
+using TgcViewer.Utils.Input;
 using TgcViewer.Utils.Modifiers;
 using TgcViewer.Utils.TgcSceneLoader;
 using TgcViewer.Utils.Sound;
 using System.IO;
+using Device = Microsoft.DirectX.Direct3D.Device;
 
 namespace AlumnoEjemplos.MiGrupo
 {
@@ -20,10 +22,14 @@ namespace AlumnoEjemplos.MiGrupo
     {
         string currentFile;
 
+
+        const float VelocidadMovimiento = 200f;
         readonly Vector3 SUN_SCALE = new Vector3(12, 12, 12);
         const float AXIS_ROTATION_SPEED = 0.5f;
         float axisRotation = 0f;
         TgcMesh sol;
+        TgcMesh nave;
+
         /// <summary>
         /// Categoría a la que pertenece el ejemplo.
         /// Influye en donde se va a haber en el árbol de la derecha de la pantalla.
@@ -46,7 +52,7 @@ namespace AlumnoEjemplos.MiGrupo
         /// </summary>
         public override string getDescription()
         {
-            return "MiIdea - Descripcion de la idea";
+            return "Spaceship - Descripcion de la idea";
         }
 
 
@@ -67,18 +73,20 @@ namespace AlumnoEjemplos.MiGrupo
             //Creacion de una esfera
             string sphere = GuiController.Instance.ExamplesMediaDir + "ModelosTgc\\Sphere\\Sphere-TgcScene.xml";
             TgcSceneLoader loader = new TgcSceneLoader();
+            //Cargado texturas para nave
+            TgcScene scene = loader.loadSceneFromFile(GuiController.Instance.ExamplesMediaDir + "MeshCreator\\Meshes\\Vehiculos\\NaveEspacial\\NaveEspacial-TgcScene.xml");
+            nave = scene.Meshes[0];
+            
             //Cargado de textura para el sol
             sol = loader.loadSceneFromFile(sphere).Meshes[0];
             sol.changeDiffuseMaps(new TgcTexture[] { TgcTexture.createTexture(d3dDevice, GuiController.Instance.ExamplesDir + "Transformations\\SistemaSolar\\SunTexture.jpg") });
 
             //Deshabilitamos el manejo automático de Transformaciones de TgcMesh, para poder manipularlas en forma customizada
             sol.AutoTransformEnable = false;
-            ///////////////USER VARS//////////////////
 
-            //Crear una UserVar
+
             GuiController.Instance.UserVars.addVar("variablePrueba");
 
-            //Cargar valor en UserVar
             GuiController.Instance.UserVars.setValue("variablePrueba", 5451);
 
 
@@ -97,11 +105,8 @@ namespace AlumnoEjemplos.MiGrupo
 
 
 
-            ///////////////CONFIGURAR CAMARA ROTACIONAL//////////////////
-            //Es la camara que viene por default, asi que no hace falta hacerlo siempre
-            GuiController.Instance.RotCamera.Enable = true;
-            //Configurar centro al que se mira y distancia desde la que se mira
-            GuiController.Instance.RotCamera.setCamera(new Vector3(0, 0, 0), 100);
+            GuiController.Instance.ThirdPersonCamera.Enable = true;
+            GuiController.Instance.ThirdPersonCamera.setCamera(nave.Position, 800, 1500);
 
 
             /*
@@ -114,27 +119,20 @@ namespace AlumnoEjemplos.MiGrupo
             GuiController.Instance.FpsCamera.setCamera(new Vector3(0, 0, -20), new Vector3(0, 0, 0));
             */
 
-
-
-            ///////////////LISTAS EN C#//////////////////
-            //crear
             List<string> lista = new List<string>();
 
-            //agregar elementos
             lista.Add("elemento1");
             lista.Add("elemento2");
 
-            //obtener elementos
             string elemento1 = lista[0];
 
-            //bucle foreach
             foreach (string elemento in lista)
             {
                 //Loggear por consola del Framework
                 GuiController.Instance.Logger.log(elemento);
             }
 
-            //bucle for
+
             for (int i = 0; i < lista.Count; i++)
             {
                 string element = lista[i];
@@ -167,7 +165,8 @@ namespace AlumnoEjemplos.MiGrupo
             //Device de DirectX para renderizar
             Device d3dDevice = GuiController.Instance.D3dDevice;
             sol.Transform = TransformarSol(elapsedTime);
-            sol.render();
+            TgcD3dInput input = GuiController.Instance.D3dInput;
+            Vector3 movimiento = new Vector3(0, 0, 0);
 
             axisRotation += AXIS_ROTATION_SPEED * elapsedTime;
             //Obtener valor de UserVar (hay que castear)
@@ -180,27 +179,31 @@ namespace AlumnoEjemplos.MiGrupo
             //TgcMp3Player.States currentState = player.getStatus();
             //player.play(true);
             //Obtener valores de Modifiers
-            float valorFloat = (float)GuiController.Instance.Modifiers["valorFloat"];
-            string opcionElegida = (string)GuiController.Instance.Modifiers["valorIntervalo"];
-            Vector3 valorVertice = (Vector3)GuiController.Instance.Modifiers["valorVertice"];
 
 
-            ///////////////INPUT//////////////////
-            //conviene deshabilitar ambas camaras para que no haya interferencia
 
-            //Capturar Input teclado 
-            if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.F))
+            if (input.keyDown(Key.Left) || input.keyDown(Key.A))
             {
-                //Tecla F apretada
+                movimiento.X = 1;
             }
-
-            //Capturar Input Mouse
-            if (GuiController.Instance.D3dInput.buttonPressed(TgcViewer.Utils.Input.TgcD3dInput.MouseButtons.BUTTON_LEFT))
+            else if (input.keyDown(Key.Right) || input.keyDown(Key.D))
             {
-                //Boton izq apretado
+                movimiento.X = -1;
             }
-
+            if (input.keyDown(Key.Up) || input.keyDown(Key.W))
+            {
+                movimiento.Z = -1;
+            }
+            else if (input.keyDown(Key.Down) || input.keyDown(Key.S))
+            {
+                movimiento.Z = 1;
+            }
+            movimiento *= VelocidadMovimiento * elapsedTime;
+            nave.move(movimiento);
+            GuiController.Instance.ThirdPersonCamera.Target = nave.Position;
             //Limpiamos todas las transformaciones con la Matrix identidad
+            sol.render();
+            nave.render();
             d3dDevice.Transform.World = Matrix.Identity;
         }
 
@@ -211,6 +214,7 @@ namespace AlumnoEjemplos.MiGrupo
         public override void close()
         {
             sol.dispose();
+            nave.dispose();
         }
 
 
