@@ -8,6 +8,7 @@ using System.Drawing;
 using Microsoft.DirectX;
 using TgcViewer.Utils.Input;
 using TgcViewer.Utils.Modifiers;
+using TgcViewer.Utils.TgcGeometry;
 using TgcViewer.Utils.TgcSceneLoader;
 using TgcViewer.Utils.Sound;
 using System.IO;
@@ -24,6 +25,8 @@ namespace AlumnoEjemplos.MiGrupo
         string currentFile;
         TgcText2d instruccionesText;
 
+        float DireccionActualMovimiento = 1f;
+        const float Flotacion = 5f;
         const float VelocidadMovimiento = 200f;
         readonly Vector3 SUN_SCALE = new Vector3(12, 12, 12);
         const float AXIS_ROTATION_SPEED = 0.5f;
@@ -178,6 +181,8 @@ namespace AlumnoEjemplos.MiGrupo
             //Obtener valor de UserVar (hay que castear)
             int valor = (int)GuiController.Instance.UserVars.getValue("variablePrueba");
 
+            #region
+            //Radio de la nave
             string filePath = (string)GuiController.Instance.Modifiers["MP3-File"];
             LoadMp3(filePath);
 
@@ -206,6 +211,10 @@ namespace AlumnoEjemplos.MiGrupo
                     player.stop();
                 }
             }
+            #endregion
+
+            #region
+            //Movimiento de la nave con teclado
             if (input.keyDown(Key.Left) || input.keyDown(Key.A))
             {
                 movimiento.X = 1;
@@ -224,6 +233,17 @@ namespace AlumnoEjemplos.MiGrupo
             }
             movimiento *= VelocidadMovimiento * elapsedTime;
             nave.move(movimiento);
+            #endregion
+
+            #region
+            //efecto de flotacion para la nave
+            nave.move(0, Flotacion * DireccionActualMovimiento * elapsedTime*2, 0);
+            if (FastMath.Abs(nave.Position.Y) > 7f)
+            {
+                DireccionActualMovimiento *= -1;
+            }
+            #endregion
+
             GuiController.Instance.ThirdPersonCamera.Target = nave.Position;
             //Limpiamos todas las transformaciones con la Matrix identidad
             sol.render();
