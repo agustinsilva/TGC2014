@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using AlumnoEjemplos.PiratasEspaciales;
 using Microsoft.DirectX.DirectInput;
 using TgcViewer.Example;
 using TgcViewer;
@@ -23,23 +24,22 @@ namespace AlumnoEjemplos.MiGrupo
     public class EjemploAlumno : TgcExample
     {
         string currentFile;
-        TgcText2d instruccionesText;
 
-        float DireccionActualMovimiento = 1f;
-        const float Flotacion = 5f;
-        const float VelocidadMovimiento = 200f;
+        Nave nave = new Nave();
+
+        List<TgcMesh> obstaculos = new List<TgcMesh>();
         readonly Vector3 SUN_SCALE = new Vector3(12, 12, 12);
         const float AXIS_ROTATION_SPEED = 0.5f;
         float axisRotation = 0f;
         TgcMesh sol;
-        TgcMesh nave;
-
+        
+        #region Descripcion del Plugin
         /// <summary>
         /// Categoría a la que pertenece el ejemplo.
         /// Influye en donde se va a haber en el árbol de la derecha de la pantalla.
         /// </summary>
         public override string getCategory()
-        {
+        {   
             return "AlumnoEjemplos";
         }
 
@@ -56,9 +56,10 @@ namespace AlumnoEjemplos.MiGrupo
         /// </summary>
         public override string getDescription()
         {
-            return "Spaceship - Descripcion de la idea";
+            return "Spaceship - Prender radio con Y, Apagar con O";
         }
 
+        #endregion
 
         /// <summary>
         /// Método que se llama una sola vez,  al principio cuando se ejecuta el ejemplo.
@@ -77,14 +78,17 @@ namespace AlumnoEjemplos.MiGrupo
             //Creacion de una esfera
             string sphere = GuiController.Instance.ExamplesMediaDir + "ModelosTgc\\Sphere\\Sphere-TgcScene.xml";
             TgcSceneLoader loader = new TgcSceneLoader();
+
             //Cargado texturas para nave
-            TgcScene scene = loader.loadSceneFromFile(GuiController.Instance.ExamplesMediaDir + "MeshCreator\\Meshes\\Vehiculos\\NaveEspacial\\NaveEspacial-TgcScene.xml");
-            nave = scene.Meshes[0];
-            
-            //Cargado de textura para el sol
+            TgcScene scene;
+            TgcScene modelosDeNaves = loader.loadSceneFromFile(GuiController.Instance.ExamplesMediaDir + "MeshCreator\\Meshes\\Vehiculos\\AvionCaza\\AvionCaza-TgcScene.xml");
+            nave.Iniciar(modelosDeNaves);
+
+                //Cargado de textura para el sol
             sol = loader.loadSceneFromFile(sphere).Meshes[0];
             sol.changeDiffuseMaps(new TgcTexture[] { TgcTexture.createTexture(d3dDevice, GuiController.Instance.ExamplesDir + "Transformations\\SistemaSolar\\SunTexture.jpg") });
 
+            
             //Deshabilitamos el manejo automático de Transformaciones de TgcMesh, para poder manipularlas en forma customizada
             sol.AutoTransformEnable = false;
 
@@ -107,21 +111,7 @@ namespace AlumnoEjemplos.MiGrupo
             //Crear un modifier para modificar un vértice
             GuiController.Instance.Modifiers.addVertex3f("valorVertice", new Vector3(-100, -100, -100), new Vector3(50, 50, 50), new Vector3(0, 0, 0));
 
-
-
-            GuiController.Instance.ThirdPersonCamera.Enable = true;
-            GuiController.Instance.ThirdPersonCamera.setCamera(nave.Position, 800, 1500);
-
-
-            /*
-            ///////////////CONFIGURAR CAMARA PRIMERA PERSONA//////////////////
-            //Camara en primera persona, tipo videojuego FPS
-            //Solo puede haber una camara habilitada a la vez. Al habilitar la camara FPS se deshabilita la camara rotacional
-            //Por default la camara FPS viene desactivada
-            GuiController.Instance.FpsCamera.Enable = true;
-            //Configurar posicion y hacia donde se mira
-            GuiController.Instance.FpsCamera.setCamera(new Vector3(0, 0, -20), new Vector3(0, 0, 0));
-            */
+            Camara.Iniciar(nave.Modelo.Position);
 
             List<string> lista = new List<string>();
 
@@ -141,15 +131,15 @@ namespace AlumnoEjemplos.MiGrupo
             {
                 string element = lista[i];
             }
-            instruccionesText = new TgcText2d();
-            instruccionesText.Text = "Radio Y = Prender  O = Apagar.";
-            instruccionesText.Position = new Point(50, 60);
-            instruccionesText.Color = Color.Green;
-            instruccionesText.changeFont(new System.Drawing.Font(FontFamily.GenericMonospace, 16, FontStyle.Bold));
 
             GuiController.Instance.BackgroundColor = Color.Black;
             currentFile = null;
             GuiController.Instance.Modifiers.addFile("MP3-File", GuiController.Instance.ExamplesMediaDir + "Music\\I am The Money.mp3", "MP3s|*.mp3");
+
+            nave.Modelo.move(0, 0, 0);
+            obstaculos.Add(sol);
+            
+
         }
 
         private void LoadMp3(string filePath)
@@ -171,85 +161,59 @@ namespace AlumnoEjemplos.MiGrupo
         /// <param name="elapsedTime">Tiempo en segundos transcurridos desde el último frame</param>
         public override void render(float elapsedTime)
         {
-            //Device de DirectX para renderizar
-            Device d3dDevice = GuiController.Instance.D3dDevice;
-            sol.Transform = TransformarSol(elapsedTime);
-            TgcD3dInput input = GuiController.Instance.D3dInput;
-            Vector3 movimiento = new Vector3(0, 0, 0);
+            
+                //Device de DirectX para renderizar
+                Device d3dDevice = GuiController.Instance.D3dDevice;
 
-            axisRotation += AXIS_ROTATION_SPEED * elapsedTime;
-            //Obtener valor de UserVar (hay que castear)
-            int valor = (int)GuiController.Instance.UserVars.getValue("variablePrueba");
+                axisRotation += AXIS_ROTATION_SPEED*elapsedTime;
+                //Obtener valor de UserVar (hay que castear)
+                int valor = (int) GuiController.Instance.UserVars.getValue("variablePrueba");
 
-            #region
-            //Radio de la nave
-            string filePath = (string)GuiController.Instance.Modifiers["MP3-File"];
-            LoadMp3(filePath);
+                #region
 
-            TgcMp3Player player = GuiController.Instance.Mp3Player;
-            TgcMp3Player.States currentState = player.getStatus();
+                //Radio de la nave
+                string filePath = (string) GuiController.Instance.Modifiers["MP3-File"];
+                LoadMp3(filePath);
 
-            if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.Y))
-            {
-                if (currentState == TgcMp3Player.States.Open)
+                TgcMp3Player player = GuiController.Instance.Mp3Player;
+                TgcMp3Player.States currentState = player.getStatus();
+
+                if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.Y))
                 {
-                    //Reproducir MP3
-                    player.play(true);
+                    if (currentState == TgcMp3Player.States.Open)
+                    {
+                        //Reproducir MP3
+                        player.play(true);
+                    }
+                    if (currentState == TgcMp3Player.States.Stopped)
+                    {
+                        //Parar y reproducir MP3
+                        player.closeFile();
+                        player.play(true);
+                    }
                 }
-                if (currentState == TgcMp3Player.States.Stopped)
+                else if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.O))
                 {
-                    //Parar y reproducir MP3
-                    player.closeFile();
-                    player.play(true);
+                    if (currentState == TgcMp3Player.States.Playing)
+                    {
+                        //Parar el MP3
+                        player.stop();
+                    }
                 }
-            }
-            else if (GuiController.Instance.D3dInput.keyPressed(Microsoft.DirectX.DirectInput.Key.O))
-            {
-                if (currentState == TgcMp3Player.States.Playing)
-                {
-                    //Parar el MP3
-                    player.stop();
-                }
-            }
-            #endregion
 
-            #region
-            //Movimiento de la nave con teclado
-            if (input.keyDown(Key.Left) || input.keyDown(Key.A))
-            {
-                movimiento.X = 1;
-            }
-            else if (input.keyDown(Key.Right) || input.keyDown(Key.D))
-            {
-                movimiento.X = -1;
-            }
-            if (input.keyDown(Key.Up) || input.keyDown(Key.W))
-            {
-                movimiento.Z = -1;
-            }
-            else if (input.keyDown(Key.Down) || input.keyDown(Key.S))
-            {
-                movimiento.Z = 1;
-            }
-            movimiento *= VelocidadMovimiento * elapsedTime;
-            nave.move(movimiento);
-            #endregion
+                #endregion
 
-            #region
-            //efecto de flotacion para la nave
-            nave.move(0, Flotacion * DireccionActualMovimiento * elapsedTime*2, 0);
-            if (FastMath.Abs(nave.Position.Y) > 7f)
-            {
-                DireccionActualMovimiento *= -1;
-            }
-            #endregion
+                
+                
+                nave.Renderizar(elapsedTime,obstaculos);
+                sol.BoundingBox.transform(sol.Transform);
+                sol.Transform = TransformarSol(elapsedTime);
+                GuiController.Instance.ThirdPersonCamera.Target = nave.Modelo.Position;
+                //Limpiamos todas las transformaciones con la Matrix identidad
+                sol.render();
+                sol.BoundingBox.render();
+                d3dDevice.Transform.World = Matrix.Identity;
 
-            GuiController.Instance.ThirdPersonCamera.Target = nave.Position;
-            //Limpiamos todas las transformaciones con la Matrix identidad
-            sol.render();
-            nave.render();
-            instruccionesText.render();
-            d3dDevice.Transform.World = Matrix.Identity;
         }
 
         /// <summary>
@@ -259,7 +223,7 @@ namespace AlumnoEjemplos.MiGrupo
         public override void close()
         {
             sol.dispose();
-            nave.dispose();
+            nave.Modelo.dispose();
         }
 
 
@@ -267,7 +231,6 @@ namespace AlumnoEjemplos.MiGrupo
         {
             Matrix scale = Matrix.Scaling(SUN_SCALE);
             Matrix yRot = Matrix.RotationY(axisRotation);
-
             return scale * yRot;
         }
     }
