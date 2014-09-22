@@ -18,13 +18,19 @@ namespace AlumnoEjemplos.MiGrupo
     {
         #region Inicializacion
 
-        const float MOVEMENT_SPEED = 200f;
-        const float ROTATION_SPEED = 30f;
+        #region Declaración
+
+        const float NAVE_MOVEMENT_SPEED = 200f;
+        const float NAVE_ROTATION_SPEED = 30f;
         readonly Vector3 NAVE_SCALE = new Vector3(0.2f, 0.2f, 0.2f);
         
         TgcMesh nave;
-        TgcScene universo;
+        TgcMesh[] planetas = new TgcMesh[10];
+        //TgcScene universo;
 
+        #endregion
+
+        #region Categoria, Nombre y Descripción.
         public override string getCategory()
         {
             return "AlumnoEjemplos";
@@ -39,6 +45,11 @@ namespace AlumnoEjemplos.MiGrupo
         {
             return "Clase para probar!";
         }
+        #endregion
+
+        #region Init
+
+
 
         public override void init()
         {
@@ -46,16 +57,38 @@ namespace AlumnoEjemplos.MiGrupo
 
             TgcSceneLoader loader = new TgcSceneLoader();
 
-            universo = loader.loadSceneFromFile(GuiController.Instance.ExamplesMediaDir + "MeshCreator\\Scenes\\Universo\\Universo-TgcScene.xml");
+            //universo = loader.loadSceneFromFile(GuiController.Instance.ExamplesMediaDir + "MeshCreator\\Scenes\\Universo\\Universo-TgcScene.xml");
             
             TgcScene scene_nave = loader.loadSceneFromFile(GuiController.Instance.ExamplesMediaDir + "MeshCreator\\Meshes\\Vehiculos\\AvionCaza\\AvionCaza-TgcScene.xml");
+
+            for (int i = 0; i < 10; i++)
+            {
+                planetas[i] = loader.loadSceneFromFile(GuiController.Instance.ExamplesMediaDir + "ModelosTgc\\Sphere\\Sphere-TgcScene.xml").Meshes[0];
+                //planetas[i].AutoTransformEnable = false;
+
+                Random rnd = new Random();
+
+                planetas[i].Scale *= rnd.Next(10);
+
+                float x = ((float)rnd.NextDouble()) * 1000;
+                float z = ((float)rnd.NextDouble()) * 1000;
+
+                planetas[i].Position = new Vector3(x, 0, z);
+            }
 
             nave = scene_nave.Meshes[0];
             nave.Scale = NAVE_SCALE;
                         
             GuiController.Instance.ThirdPersonCamera.Enable = true;
-            GuiController.Instance.ThirdPersonCamera.setCamera(nave.Position, 300, 300);
+            GuiController.Instance.ThirdPersonCamera.setCamera(nave.Position, 10, 30);
+            //GuiController.Instance.ThirdPersonCamera.setCamera(planetas[1].Position, 300, 300);
+
+            GuiController.Instance.BackgroundColor = Color.Black;
         }
+
+
+
+        #endregion
 
         #endregion
 
@@ -88,25 +121,26 @@ namespace AlumnoEjemplos.MiGrupo
             //Vector3 movement = new Vector3(0, 0, 0);
             if (input.keyDown(Key.Left) || input.keyDown(Key.A))
             {
-                rotate = -ROTATION_SPEED;
+                rotate = -NAVE_ROTATION_SPEED;
                 rotating = true;
             }
             else if (input.keyDown(Key.Right) || input.keyDown(Key.D))
             {
-                rotate = ROTATION_SPEED;
+                rotate = NAVE_ROTATION_SPEED;
                 rotating = true;
             }
             if (input.keyDown(Key.Up) || input.keyDown(Key.W))
             {
-                moveForward = -MOVEMENT_SPEED;
+                moveForward = -NAVE_MOVEMENT_SPEED;
                 moving = true;
             }
             else if (input.keyDown(Key.Down) || input.keyDown(Key.S))
             {
-                moveForward = MOVEMENT_SPEED;
+                moveForward = NAVE_MOVEMENT_SPEED;
                 moving = true;
             }
 
+            Vector3 Position_prev = nave.Position;
 
             if (rotating)
             {
@@ -124,6 +158,27 @@ namespace AlumnoEjemplos.MiGrupo
             //movement *= MOVEMENT_SPEED * elapsedTime;
             //nave.move(movement);
 
+            bool Collision = false;
+
+            foreach (TgcMesh planeta in planetas)
+            {
+                TgcBoundingBox nave_BBox = nave.BoundingBox;
+                TgcBoundingBox planeta_BBox = planeta.BoundingBox;
+
+                TgcCollisionUtils.BoxBoxResult Collision_Type = TgcCollisionUtils.classifyBoxBox(nave_BBox, planeta_BBox);
+
+                if (Collision_Type != TgcCollisionUtils.BoxBoxResult.Afuera)
+                {
+                    Collision = true;
+                    break;
+                }
+            }
+
+            if (Collision)
+            {
+                ;
+            }
+
             #endregion
 
             #region Camara
@@ -135,7 +190,17 @@ namespace AlumnoEjemplos.MiGrupo
             #region Render
 
             nave.render();
-            universo.renderAll();
+            for (int i = 0; i < 10; i++)
+            {
+                planetas[i].render();
+            }
+            //universo.renderAll();
+
+            nave.BoundingBox.render();
+            foreach (TgcMesh planeta in planetas)
+            {
+                planeta.BoundingBox.render();
+            }
 
             #endregion
 
@@ -147,8 +212,12 @@ namespace AlumnoEjemplos.MiGrupo
 
         public override void close()
         {
-            universo.disposeAll();
+            //universo.disposeAll();
             nave.dispose();
+            for (int i = 0; i < 10; i++)
+            {
+                planetas[i].dispose();
+            }
         }
 
         #endregion
