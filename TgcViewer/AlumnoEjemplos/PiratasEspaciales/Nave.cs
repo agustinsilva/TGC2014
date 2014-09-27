@@ -22,6 +22,7 @@ namespace AlumnoEjemplos.PiratasEspaciales
         public TgcMesh Modelo { get; set; }
         public List<Disparo> Disparos { get; set; }
         public float TiempoRecarga { get; set; }
+        public bool Saltando { get; set; }
 
         public Nave()
         {
@@ -32,6 +33,7 @@ namespace AlumnoEjemplos.PiratasEspaciales
             TiempoParado = 0F;
             TiempoRecarga = 1f;
             Disparos = new List<Disparo>();
+            Saltando = false;
         }
 
         public void Iniciar(TgcScene naves)
@@ -144,11 +146,34 @@ namespace AlumnoEjemplos.PiratasEspaciales
             TiempoParado = TiempoParado + tiempoRenderizado*4;
         }
 
+        public void SaltaHiperEspacio()
+        {
+             TgcD3dInput input = GuiController.Instance.D3dInput;
+
+            if (Saltando == false) { 
+            if (input.keyDown(Key.Space))
+            {
+                VelocidadMovimiento += 400f;
+                Saltando = true;
+            }
+            }
+            if (Saltando) { 
+            if (input.keyUp(Key.Space))
+            {
+                VelocidadMovimiento -= 400f;
+                Saltando = false;
+            }
+           }
+        }
+
         public void Renderizar(float tiempoRenderizado,List<TgcMesh> obstaculos)
         {
-
+            SaltaHiperEspacio();
             this.Movimiento(tiempoRenderizado,obstaculos);
+            if (!Saltando) 
+            { 
             this.Disparar(tiempoRenderizado);
+            }
             if (Disparos != null)
             {
                 foreach (Disparo disparo in Disparos)
@@ -167,7 +192,6 @@ namespace AlumnoEjemplos.PiratasEspaciales
             //la flotacion requiere mejoras. Agustin S.
             //this.FlotacionEspacial(tiempoRenderizado);
             Modelo.render();
-            Modelo.BoundingBox.render();
         }
 
     }

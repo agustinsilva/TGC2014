@@ -15,15 +15,18 @@ namespace AlumnoEjemplos.PiratasEspaciales
          public NaveEnemiga()
         {
             VelocidadMovimiento = 200f;
-
+    
         }
 
          public void Iniciar(TgcScene naves)
         {
             this.Modelo = naves.Meshes[0];
-             Modelo.move(500,500,500);
+             this.Modelo.move(0, 0,750);
         }
 
-
+        public void Renderizar()
+        {
+            Modelo.render();
+        }
     }
 }

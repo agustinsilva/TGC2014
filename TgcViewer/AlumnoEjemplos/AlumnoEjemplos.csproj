@@ -119,6 +119,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="PiratasEspaciales\Shaders\" />
     <Folder Include="PiratasEspaciales\Sonidos\" />
     <Folder Include="PiratasEspaciales\Texturas\" />
   </ItemGroup>
