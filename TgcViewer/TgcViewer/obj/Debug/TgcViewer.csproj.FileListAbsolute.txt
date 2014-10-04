@@ -44,3 +44,4 @@ C:\Users\Agustin\Desktop\TGC2014\TgcViewer\TgcViewer\obj\Debug\TgcViewer.exe
 C:\Users\Agustin\Desktop\TGC2014\TgcViewer\TgcViewer\obj\Debug\TgcViewer.pdb
 C:\Users\Agustin\Desktop\TGC2014\TgcViewer\TgcViewer.exe
 C:\Users\Agustin\Desktop\TGC2014\TgcViewer\TgcViewer.pdb
+C:\Users\Skirmlet\TGC2014\TgcViewer\TgcViewer\obj\Debug\TgcViewer.csprojResolveAssemblyReference.cache
