@@ -32,7 +32,7 @@ namespace AlumnoEjemplos.MiGrupo
         Effect effect;
 
         Nave nave = new Nave();
-        public NaveEnemiga NaveEnemiga1 = new NaveEnemiga();
+        NaveEnemiga NaveEnemiga1 = new NaveEnemiga();
         public float Time = 0;
         public int CantidadRenderizadas = 0;
         List<TgcMesh> obstaculos = new List<TgcMesh>();
@@ -88,10 +88,11 @@ namespace AlumnoEjemplos.MiGrupo
             TgcSceneLoader loader = new TgcSceneLoader();
 
             //Cargado texturas para nave
-            TgcScene scene;
+            TgcScene scene = loader.loadSceneFromFile(GuiController.Instance.ExamplesMediaDir + "MeshCreator\\Meshes\\Vehiculos\\AvionCaza\\AvionCaza-TgcScene.xml");
             TgcScene modelosDeNaves = loader.loadSceneFromFile(GuiController.Instance.ExamplesMediaDir + "MeshCreator\\Meshes\\Vehiculos\\AvionCaza\\AvionCaza-TgcScene.xml");
+            
             nave.Iniciar(modelosDeNaves);
-            NaveEnemiga1.Iniciar(modelosDeNaves);
+            NaveEnemiga1.Iniciar(scene);
                 //Cargado de textura para el sol
             sol = loader.loadSceneFromFile(sphere).Meshes[0];
             sol.changeDiffuseMaps(new TgcTexture[] { TgcTexture.createTexture(d3dDevice, GuiController.Instance.ExamplesDir + "Transformations\\SistemaSolar\\SunTexture.jpg") });
@@ -256,14 +257,13 @@ namespace AlumnoEjemplos.MiGrupo
                 //Luego tomamos lo dibujado antes y lo combinamos con una textura con efecto de alarma
                 drawPostProcess(d3dDevice);
                 
-                NaveEnemiga1.Renderizar();
+                NaveEnemiga1.Modelo.render();
                 nave.Renderizar(elapsedTime, obstaculos);
                 sol.BoundingBox.transform(sol.Transform);
                 sol.Transform = TransformarSol(elapsedTime);
                 GuiController.Instance.ThirdPersonCamera.Target = nave.Modelo.Position;
                 //Limpiamos todas las transformaciones con la Matrix identidad
                 sol.render();
-                sol.BoundingBox.render();
                 d3dDevice.Transform.World = Matrix.Identity;
             
            
@@ -302,8 +302,7 @@ namespace AlumnoEjemplos.MiGrupo
                 GuiController.Instance.ThirdPersonCamera.Target = nave.Modelo.Position;
                 //Limpiamos todas las transformaciones con la Matrix identidad
                 sol.render();
-                sol.BoundingBox.render();
-                NaveEnemiga1.Renderizar();
+             NaveEnemiga1.Modelo.render();
             d3dDevice.Transform.World = Matrix.Identity;
 
 

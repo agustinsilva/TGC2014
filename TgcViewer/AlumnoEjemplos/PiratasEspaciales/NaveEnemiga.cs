@@ -21,7 +21,7 @@ namespace AlumnoEjemplos.PiratasEspaciales
          public void Iniciar(TgcScene naves)
         {
             this.Modelo = naves.Meshes[0];
-             this.Modelo.move(0, 0,750);
+            this.Modelo.move(0, 0,0);
         }
 
         public void Renderizar()

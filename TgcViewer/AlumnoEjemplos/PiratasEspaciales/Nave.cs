@@ -40,7 +40,7 @@ namespace AlumnoEjemplos.PiratasEspaciales
         {
             this.Modelo = naves.Meshes[0];
 
-            this.Modelo.move(0,0,1500);
+            this.Modelo.move(0,1000,1500);
         }
 
         public void Movimiento(float tiempoRenderizado, List<TgcMesh> obstaculos)
