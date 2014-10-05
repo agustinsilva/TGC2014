@@ -31,8 +31,9 @@ namespace AlumnoEjemplos.MiGrupo
         Surface pOldRT;
         Effect effect;
 
-        Nave nave = new Nave();
-        NaveEnemiga NaveEnemiga1 = new NaveEnemiga();
+        public Nave nave = new Nave();
+        public NaveEnemiga NaveEnemiga1 = new NaveEnemiga();
+
         public float Time = 0;
         public int CantidadRenderizadas = 0;
         List<TgcMesh> obstaculos = new List<TgcMesh>();
@@ -88,11 +89,15 @@ namespace AlumnoEjemplos.MiGrupo
             TgcSceneLoader loader = new TgcSceneLoader();
 
             //Cargado texturas para nave
-            TgcScene scene = loader.loadSceneFromFile(GuiController.Instance.ExamplesMediaDir + "MeshCreator\\Meshes\\Vehiculos\\AvionCaza\\AvionCaza-TgcScene.xml");
+
+            //TgcScene modeloNaveEnemiga = loader.loadSceneFromFile(GuiController.Instance.ExamplesMediaDir + "MeshCreator\\Meshes\\Vehiculos\\StarWars-Speeder\\StarWars-Speeder-TgcScene.xml");
+            TgcScene modeloNaveEnemiga = loader.loadSceneFromFile(GuiController.Instance.ExamplesMediaDir + "MeshCreator\\Meshes\\Vehiculos\\AvionCaza\\AvionCaza-TgcScene.xml");
             TgcScene modelosDeNaves = loader.loadSceneFromFile(GuiController.Instance.ExamplesMediaDir + "MeshCreator\\Meshes\\Vehiculos\\AvionCaza\\AvionCaza-TgcScene.xml");
             
             nave.Iniciar(modelosDeNaves);
-            NaveEnemiga1.Iniciar(scene);
+
+            NaveEnemiga1.Iniciar(modeloNaveEnemiga);
+
                 //Cargado de textura para el sol
             sol = loader.loadSceneFromFile(sphere).Meshes[0];
             sol.changeDiffuseMaps(new TgcTexture[] { TgcTexture.createTexture(d3dDevice, GuiController.Instance.ExamplesDir + "Transformations\\SistemaSolar\\SunTexture.jpg") });
@@ -257,8 +262,10 @@ namespace AlumnoEjemplos.MiGrupo
                 //Luego tomamos lo dibujado antes y lo combinamos con una textura con efecto de alarma
                 drawPostProcess(d3dDevice);
                 
-                NaveEnemiga1.Modelo.render();
                 nave.Renderizar(elapsedTime, obstaculos);
+                NaveEnemiga1.MoverHaciaObjetivo(elapsedTime, nave.Modelo.Position);
+                NaveEnemiga1.Renderizar();
+                
                 sol.BoundingBox.transform(sol.Transform);
                 sol.Transform = TransformarSol(elapsedTime);
                 GuiController.Instance.ThirdPersonCamera.Target = nave.Modelo.Position;

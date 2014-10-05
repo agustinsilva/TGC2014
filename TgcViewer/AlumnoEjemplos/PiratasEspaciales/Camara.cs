@@ -23,7 +23,8 @@ namespace AlumnoEjemplos.PiratasEspaciales
         public static void Iniciar(Vector3 posicion)
         {
             GuiController.Instance.ThirdPersonCamera.Enable = true;
-            GuiController.Instance.ThirdPersonCamera.setCamera(posicion, 100, 200);
+            //GuiController.Instance.ThirdPersonCamera.setCamera(posicion, 100, 200);
+            GuiController.Instance.ThirdPersonCamera.setCamera(posicion, 400, 1000);
         }
     }
 }
