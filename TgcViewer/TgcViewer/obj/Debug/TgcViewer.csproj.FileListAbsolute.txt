@@ -28,6 +28,7 @@ C:\Users\Skirmlet\TGC2014\TgcViewer\TgcViewer\obj\Debug\TgcViewer.exe
 C:\Users\Skirmlet\TGC2014\TgcViewer\TgcViewer\obj\Debug\TgcViewer.pdb
 C:\Users\Skirmlet\TGC2014\TgcViewer\TgcViewer.exe
 C:\Users\Skirmlet\TGC2014\TgcViewer\TgcViewer.pdb
+C:\Users\Skirmlet\TGC2014\TgcViewer\TgcViewer\obj\Debug\TgcViewer.csprojResolveAssemblyReference.cache
 C:\Users\Agustin\Desktop\TGC2014\TgcViewer\TgcViewer\obj\Debug\TgcViewer.csprojResolveAssemblyReference.cache
 C:\Users\Agustin\Desktop\TGC2014\TgcViewer\TgcViewer\obj\Debug\TgcViewer.MainForm.resources
 C:\Users\Agustin\Desktop\TGC2014\TgcViewer\TgcViewer\obj\Debug\TgcViewer.Properties.Resources.resources
@@ -44,4 +45,3 @@ C:\Users\Agustin\Desktop\TGC2014\TgcViewer\TgcViewer\obj\Debug\TgcViewer.exe
 C:\Users\Agustin\Desktop\TGC2014\TgcViewer\TgcViewer\obj\Debug\TgcViewer.pdb
 C:\Users\Agustin\Desktop\TGC2014\TgcViewer\TgcViewer.exe
 C:\Users\Agustin\Desktop\TGC2014\TgcViewer\TgcViewer.pdb
-C:\Users\Skirmlet\TGC2014\TgcViewer\TgcViewer\obj\Debug\TgcViewer.csprojResolveAssemblyReference.cache
