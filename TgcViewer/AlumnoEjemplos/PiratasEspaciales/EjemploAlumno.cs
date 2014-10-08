@@ -96,8 +96,7 @@ namespace AlumnoEjemplos.MiGrupo
             
             nave.Iniciar(modelosDeNaves);
 
-            NaveEnemiga1.Iniciar(modeloNaveEnemiga);
-
+            NaveEnemiga1.Iniciar(modeloNaveEnemiga, nave.Modelo.Position);
                 //Cargado de textura para el sol
             sol = loader.loadSceneFromFile(sphere).Meshes[0];
             sol.changeDiffuseMaps(new TgcTexture[] { TgcTexture.createTexture(d3dDevice, GuiController.Instance.ExamplesDir + "Transformations\\SistemaSolar\\SunTexture.jpg") });
@@ -264,7 +263,7 @@ namespace AlumnoEjemplos.MiGrupo
                 
                 nave.Renderizar(elapsedTime, obstaculos);
                 NaveEnemiga1.MoverHaciaObjetivo(elapsedTime, nave.Modelo.Position);
-                NaveEnemiga1.Renderizar();
+                NaveEnemiga1.Renderizar(elapsedTime, obstaculos);
                 
                 sol.BoundingBox.transform(sol.Transform);
                 sol.Transform = TransformarSol(elapsedTime);
@@ -309,7 +308,10 @@ namespace AlumnoEjemplos.MiGrupo
                 GuiController.Instance.ThirdPersonCamera.Target = nave.Modelo.Position;
                 //Limpiamos todas las transformaciones con la Matrix identidad
                 sol.render();
-             NaveEnemiga1.Modelo.render();
+
+                sol.BoundingBox.render();
+                NaveEnemiga1.Renderizar(elapsedTime, obstaculos);
+
             d3dDevice.Transform.World = Matrix.Identity;
 
 
