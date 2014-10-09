@@ -3,6 +3,7 @@ using Microsoft.DirectX.Direct3D;
 using TgcViewer.Utils.TgcSceneLoader;
 using TgcViewer.Utils.TgcGeometry;
 using System.Collections.Generic;
+using TgcViewer;
 
 namespace AlumnoEjemplos.PiratasEspaciales
 {
@@ -15,10 +16,12 @@ namespace AlumnoEjemplos.PiratasEspaciales
         public List<Disparo> Disparos { get; set; }
         Matrix MatrizRotacion;
         Vector3 RotacionOriginal;
+        public float TiempoParado { get; set; }
+        public float TiempoRecarga { get; set; }
 
          public NaveEnemiga()
         {
-            VelocidadMovimiento = 85f;
+            VelocidadMovimiento = 100f;
             flag = false;
             Disparos = new List<Disparo>();
         }
@@ -30,8 +33,9 @@ namespace AlumnoEjemplos.PiratasEspaciales
             this.Modelo.Position = new Vector3(499, 100, 499);
             posicionInicial = this.Modelo.Position;
             RotacionOriginal = new Vector3(0, 0, -1);
-            this.Modelo.AutoTransformEnable = false;
             MatrizRotacion = Matrix.Identity;
+            TiempoParado = 0F;
+            TiempoRecarga = 1f;
         }
 
         public void MoverHaciaObjetivo(float tiempoRenderizado, Vector3 posicionObjetivo)
@@ -45,11 +49,21 @@ namespace AlumnoEjemplos.PiratasEspaciales
             //Calculo matriz de rotacion
             Vector3 DireccionObjetivo = Vector3.Normalize(posicionObjetivo - this.Modelo.Position);
             float angulo = FastMath.Acos(Vector3.Dot(RotacionOriginal, DireccionObjetivo));
-            Vector3 axisRotation = Vector3.Cross(RotacionOriginal, DireccionObjetivo);
+            Vector3 axisRotation = Vector3.Cross(this.Modelo.Rotation, DireccionObjetivo);
             MatrizRotacion = Matrix.RotationAxis(axisRotation, angulo);
 
-            this.Modelo.Transform = MatrizRotacion * Matrix.Translation(this.Modelo.Position);
-
+            float cantidadDeMovimiento = this.VelocidadMovimiento * tiempoRenderizado;
+            float giro = this.Modelo.Rotation.Y - angulo;
+            if (giro < -0.1)
+            {
+                this.Modelo.rotateY(Geometry.DegreeToRadian(-giro * 100 * tiempoRenderizado));
+                return;
+            }
+            else if (giro > 0.1)
+            {
+                this.Modelo.rotateY(Geometry.DegreeToRadian( -giro * 100 * tiempoRenderizado));
+                return;
+            }
             if (DistanciaAbs.X + DistanciaAbs.Y + DistanciaAbs.Z > 700f)
             {
                             
@@ -59,11 +73,11 @@ namespace AlumnoEjemplos.PiratasEspaciales
                     if (DistanciaAbs.X >= DistanciaAbs.Z)
                     {
                         // MOVER EN X
-                        if (Distancia.X > 0)
+                        if (Distancia.X > cantidadDeMovimiento)
                         {
-                            this.Modelo.move(this.VelocidadMovimiento * tiempoRenderizado, 0, 0);
+                            this.Modelo.move(cantidadDeMovimiento, 0, 0);
                         }
-                        else this.Modelo.move(this.VelocidadMovimiento * tiempoRenderizado * -1, 0, 0);
+                        else this.Modelo.move(cantidadDeMovimiento * -1, 0, 0);
 
                     }
                     else
@@ -71,9 +85,10 @@ namespace AlumnoEjemplos.PiratasEspaciales
                         // MOVER EN Z
                         if (Distancia.Z > 0)
                         {
-                            this.Modelo.move(0, 0, this.VelocidadMovimiento * tiempoRenderizado);
+                            this.Modelo.move(0, 0, cantidadDeMovimiento);
                         }
-                        else this.Modelo.move(0, 0, this.VelocidadMovimiento * tiempoRenderizado * -1);
+                        else this.Modelo.move(0, 0, cantidadDeMovimiento * -1);
+
                     }
                 }
                 else
@@ -83,26 +98,31 @@ namespace AlumnoEjemplos.PiratasEspaciales
                         // MOVER EN Y
                         if (Distancia.Y > 0)
                         {
-                            this.Modelo.move(0, this.VelocidadMovimiento * tiempoRenderizado, 0);
+                            this.Modelo.move(0, cantidadDeMovimiento, 0);
                         }
-                        else this.Modelo.move(0, this.VelocidadMovimiento * tiempoRenderizado * -1, 0);
+                        else this.Modelo.move(0, cantidadDeMovimiento * -1, 0);
                     }
                     else
                     {
                         // MOVER EN Z
                         if (Distancia.Z > 0)
                         {
-                            this.Modelo.move(0, 0, this.VelocidadMovimiento * tiempoRenderizado);
+                            this.Modelo.move(0, 0, cantidadDeMovimiento);
                         }
-                        else this.Modelo.move(0, 0, this.VelocidadMovimiento * tiempoRenderizado * -1);
+                        else this.Modelo.move(0, 0, cantidadDeMovimiento * -1);
                     }
                 } 
             }
             else
             {
                 //Disparar. Tambien deberia rotar para que el disparo vaya bien
-                Disparo disparo = new Disparo(Modelo);
-                Disparos.Add(disparo);
+                if (TiempoParado == 0 || TiempoParado >= TiempoRecarga)
+                {
+                    Disparo disparo = new Disparo(this.Modelo, MatrizRotacion);
+                    Disparos.Add(disparo);
+                    TiempoParado = 0f;
+                }
+                TiempoParado = TiempoParado + tiempoRenderizado*4;
             }
         }
 
