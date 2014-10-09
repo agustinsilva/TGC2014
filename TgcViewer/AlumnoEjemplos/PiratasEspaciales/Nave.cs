@@ -137,7 +137,7 @@ namespace AlumnoEjemplos.PiratasEspaciales
             TgcD3dInput input = GuiController.Instance.D3dInput;
             if (GuiController.Instance.D3dInput.buttonDown(TgcD3dInput.MouseButtons.BUTTON_LEFT))
             {
-                Disparo disparo = new Disparo(Modelo);
+                Disparo disparo = new Disparo(Modelo,new Matrix());
                 Disparos.Add(disparo);
 
             }
