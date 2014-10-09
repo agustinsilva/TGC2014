@@ -23,6 +23,8 @@ namespace AlumnoEjemplos.PiratasEspaciales
         public List<Disparo> Disparos { get; set; }
         public float TiempoRecarga { get; set; }
         public bool Saltando { get; set; }
+        public float RendAcumuladoS { get; set; }
+        public float RendAcumuladoW { get; set; }
 
         public Nave()
         {
@@ -34,6 +36,8 @@ namespace AlumnoEjemplos.PiratasEspaciales
             TiempoRecarga = 1f;
             Disparos = new List<Disparo>();
             Saltando = false;
+            RendAcumuladoS = 0f;
+            RendAcumuladoW = 0f;
         }
 
         public void Iniciar(TgcScene naves)
@@ -52,6 +56,9 @@ namespace AlumnoEjemplos.PiratasEspaciales
             TgcD3dInput input = GuiController.Instance.D3dInput;
             Vector3 movimiento = new Vector3(0, 0, 0);
 
+            RendAcumuladoS += tiempoRenderizado;    //tiempo que se estuvo yendo hacia atras
+            RendAcumuladoW += tiempoRenderizado;    //tiempo que se estuvo yendo hacia adelante
+
             if (input.keyDown(Key.Left) || input.keyDown(Key.A))
             {
                 rotando = true;
@@ -65,14 +72,22 @@ namespace AlumnoEjemplos.PiratasEspaciales
             if (input.keyDown(Key.Up) || input.keyDown(Key.W))
             {
                 seMovio = true;
-                mover = -VelocidadMovimiento;
+                mover = -VelocidadMovimiento - 10 * (float)Math.Pow(RendAcumuladoW, 2);
                 Modelo.moveOrientedY(mover * tiempoRenderizado);
             }
-            else if (input.keyDown(Key.Down) || input.keyDown(Key.S))
+            else
+            {
+                RendAcumuladoW = 0;
+            }
+            if (input.keyDown(Key.Down) || input.keyDown(Key.S))
             {
                 seMovio = true;
-                mover = VelocidadMovimiento;
+                mover = VelocidadMovimiento + 10 * (float)Math.Pow(RendAcumuladoS, 2);
                 Modelo.moveOrientedY(mover * tiempoRenderizado);
+            }
+            else
+            {
+                RendAcumuladoS = 0;
             }
             if ( input.keyDown(Key.R))
             {
