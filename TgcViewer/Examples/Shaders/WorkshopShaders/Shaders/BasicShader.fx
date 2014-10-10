@@ -73,17 +73,18 @@ VS_OUTPUT vs_main2( VS_INPUT Input )
 {
    VS_OUTPUT Output;
 
-   // Animar posicion
-   /*Input.Position.x += sin(time)*30*sign(Input.Position.x);
-   Input.Position.y += cos(time)*30*sign(Input.Position.y-20);
-   Input.Position.z += sin(time)*30*sign(Input.Position.z);
-   */
 
    // Animar posicion
+   /*
    float Y = Input.Position.y;
    float Z = Input.Position.z;
    Input.Position.y = Y * cos(time) - Z * sin(time);
    Input.Position.z = Z * cos(time) + Y * sin(time);
+   */
+
+   Input.Position.y = 10*cos(Input.Position.x + time) + 10*sin(Input.Position.z + time);
+
+   
 
    
    //Proyectar posicion
@@ -112,6 +113,7 @@ float4 ps_main( float2 Texcoord: TEXCOORD0, float4 Color:COLOR0) : COLOR0
 	// combino color y textura
 	// en este ejemplo combino un 80% el color de la textura y un 20%el del vertice
 	return 0.8*fvBaseColor + 0.2*Color;
+	//return float4(1,0,0,1);
 }
 
 

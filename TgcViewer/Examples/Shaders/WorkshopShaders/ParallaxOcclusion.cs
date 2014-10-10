@@ -52,6 +52,7 @@ namespace Examples.Shaders.WorkshopShaders
         {
             time = 0f;
             Device d3dDevice = GuiController.Instance.D3dDevice;
+            GuiController.Instance.CustomRenderEnabled = true;
             MyMediaDir = GuiController.Instance.ExamplesDir + "Shaders\\WorkshopShaders\\Media\\";
             MyShaderDir = GuiController.Instance.ExamplesDir + "Shaders\\WorkshopShaders\\Shaders\\";
 
@@ -132,7 +133,6 @@ namespace Examples.Shaders.WorkshopShaders
             effect.SetValue("fHeightMapScale", (float)GuiController.Instance.Modifiers["HeightMapScale"]);
             effect.SetValue("fvEyePosition", TgcParserUtils.vector3ToFloat3Array(GuiController.Instance.RotCamera.getPosition()));
 
-            device.EndScene();
             effect.SetValue("time", time);
             switch(nro_textura)
             {
@@ -155,13 +155,15 @@ namespace Examples.Shaders.WorkshopShaders
             device.BeginScene();
 
             mesh.Effect = effect;
-            mesh.Technique = pom ? "ParallaxOcclusion" : "BumpMap";
+            mesh.Technique = pom ? "ParallaxOcclusionPiso" : "BumpMap";
             mesh.render();
             
 
             GuiController.Instance.Text3d.drawText((pom ? "ParallaxOcclusion" : "BumpMap") +
                 "  "+ (phong?"Phong Lighting":"Iluminación estática")
                         , 0, 0, Color.Yellow);
+
+            device.EndScene();
 
 
         }

@@ -151,4 +151,173 @@ technique PostProcess
 
 }
 
+// Distorciones, fuente:
+// http://en.wikipedia.org/wiki/Distortion_(optics)#Software_correction
 
+// Factor de distorcion del ojo de pez
+float fish_kU = 0.25f; 
+float fish_kV = 0.25f; 
+
+bool grid = false;
+float4 PSOjoPez( in float2 Tex : TEXCOORD0 , in float2 vpos : VPOS) : COLOR0
+{
+    // Transformo las coordinates de (0.0 - 1.0) a (-0.5 - 0.5)
+    float X = Tex.x - 0.5f;
+    float Y = Tex.y - 0.5f;
+	// Computa la distorcion ojo de pez
+    float r = pow(X,2) + pow(Y,2);
+    float U = pow(r,fish_kU) * X + 0.5f;
+    float V = pow(r,fish_kV) * Y + 0.5f;
+	float4 rta;
+	int pos_x = round(U*screen_dx);
+	int pos_y = round(V*screen_dy);
+	if(grid && (pos_x%50==1 || pos_y%50==1))
+		rta = float4(1,1,1,1);
+	else
+		rta = tex2D(RenderTarget, float2(U,V));
+	return rta;
+}
+
+float4 PSPincusion( in float2 Tex : TEXCOORD0 , in float2 vpos : VPOS) : COLOR0
+{
+	float2 center = float2(0.5,0.5);
+	float dist = distance(center, Tex);
+    Tex -= center;
+	float percent = 1.0 - ((0.5 - dist) / 0.5) * fish_kU;
+	Tex *= percent;
+    Tex += center;
+	float4 rta;
+	int pos_x = round(Tex.x*screen_dx);
+	int pos_y = round(Tex.y*screen_dy);
+	if(grid && (pos_x%50==1 || pos_y%50==1))
+		rta = float4(1,1,1,1);
+	else
+		rta = tex2D(RenderTarget, Tex);
+	return rta;
+
+}
+
+float4 PSBarrel( in float2 Tex : TEXCOORD0 , in float2 vpos : VPOS) : COLOR0
+{
+	float2 center = float2(0.5,0.5);
+	float dist = distance(center, Tex);
+    Tex -= center;
+	float percent = 1.0 + ((0.5 - dist) / 0.5) * fish_kU;
+	Tex *= percent;
+    Tex += center;
+	float4 rta;
+	int pos_x = round(Tex.x*screen_dx);
+	int pos_y = round(Tex.y*screen_dy);
+	if(grid && (pos_x%50==1 || pos_y%50==1))
+		rta = float4(1,1,1,1);
+	else
+		rta = tex2D(RenderTarget, Tex);
+	return rta;
+
+}
+
+
+technique OjoPez
+{
+   pass Pass_0
+   {
+	  VertexShader = compile vs_3_0 VSCopy();
+	  PixelShader = compile ps_3_0 PSOjoPez();
+   }
+
+}
+
+
+technique Pincusion
+{
+   pass Pass_0
+   {
+	  VertexShader = compile vs_3_0 VSCopy();
+	  PixelShader = compile ps_3_0 PSPincusion();
+   }
+
+}
+
+technique Barrel
+{
+   pass Pass_0
+   {
+	  VertexShader = compile vs_3_0 VSCopy();
+	  PixelShader = compile ps_3_0 PSBarrel();
+   }
+
+}
+
+float4 PSCopy( in float2 Tex : TEXCOORD0 ) : COLOR0
+{
+	return tex2D(RenderTarget, Tex);
+}
+
+
+technique ScreenCopy
+{
+   pass Pass_0
+   {
+	  VertexShader = compile vs_3_0 VSCopy();
+	  PixelShader = compile ps_3_0 PSCopy();
+   }
+
+}
+
+
+// Traducidas del SDK del OCULUS RIFF
+/*
+"vec2 HmdWarp(vec2 in01)\n"
+    "{\n"
+    "   vec2  theta = (in01 - LensCenter) * ScaleIn;\n" // Scales to [-1, 1]
+    "   float rSq = theta.x * theta.x + theta.y * theta.y;\n"
+    "   vec2  theta1 = theta * (HmdWarpParam.x + HmdWarpParam.y * rSq + "
+    "                           HmdWarpParam.z * rSq * rSq + HmdWarpParam.w * rSq * rSq * rSq);\n"
+    "   return LensCenter + Scale * theta1;\n"
+    "}\n"
+    "void main()\n"
+    "{\n"
+    "   vec2 tc = HmdWarp(oTexCoord);\n"
+    "   if (!all(equal(clamp(tc, ScreenCenter-vec2(0.25,0.5), ScreenCenter+vec2(0.25,0.5)), tc)))\n"
+    "       gl_FragColor = vec4(0);\n"
+    "   else\n"
+    "       gl_FragColor = texture2D(Texture0, tc);\n"
+    "}\n";
+	*/
+
+float2 LensCenter = float2(0.5,0.5);
+float ScaleIn = 1.5;	
+float Scale = 0.1;
+float4 HmdWarpParam = float4(1.0f , 0.22f , 0.24f , 0.041f);
+
+float2 HmdWarp(float2 in01)
+{
+	float2 theta = (in01 - LensCenter) * ScaleIn;		// Scales to [-1, 1]
+    float rSq = theta.x * theta.x + theta.y * theta.y;
+    float2 theta1 = theta * (HmdWarpParam.x + HmdWarpParam.y * rSq + 
+				HmdWarpParam.z * rSq * rSq + HmdWarpParam.w * rSq * rSq * rSq);
+    
+	return LensCenter + Scale * theta1;
+}
+
+
+float4 ps_oculus( in float2 Tex : TEXCOORD0 ) : COLOR0
+{
+    float2 tc = HmdWarp(Tex);
+	float4 rta;
+	if (tc.x>=0 && tc.x<=1 && tc.y>=0 && tc.y<=1)
+		rta = tex2D(RenderTarget, tc);
+	else
+		rta = float4(0,0,0.5,1);
+	return rta;
+}
+
+technique OculusRift
+{
+   pass Pass_0
+   {
+	  VertexShader = compile vs_3_0 VSCopy();
+	  PixelShader = compile ps_3_0 ps_oculus();
+   }
+
+}

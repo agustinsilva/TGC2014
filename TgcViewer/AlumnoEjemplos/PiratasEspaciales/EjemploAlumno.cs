@@ -30,7 +30,7 @@ namespace AlumnoEjemplos.MiGrupo
         Texture renderTarget2D;
         Surface pOldRT;
         Effect effect;
-
+        public Camara camaraTerceraPersona = new Camara();
         public Nave nave = new Nave();
         public NaveEnemiga NaveEnemiga1 = new NaveEnemiga();
 
@@ -65,20 +65,18 @@ namespace AlumnoEjemplos.MiGrupo
         /// </summary>
         public override string getDescription()
         {
-            return "Spaceship - Prender radio con Y, Apagar con O";
+            return "Spaceship -Rotar con A(para izquierda) y S(para derecha) mover para adelante:W" +
+                   "Mover para atras:S,Disparar con click izquierdo" +
+                   " Prender radio con Y, Apagar con O";
         }
 
         #endregion
 
         /// <summary>
         /// Método que se llama una sola vez,  al principio cuando se ejecuta el ejemplo.
-        /// Escribir aquí todo el código de inicialización: cargar modelos, texturas, modifiers, uservars, etc.
-        /// Borrar todo lo que no haga falta
         /// </summary>
         public override void init()
         {
-            //GuiController.Instance: acceso principal a todas las herramientas del Framework
-
             //Device de DirectX para crear primitivas
             Device d3dDevice = GuiController.Instance.D3dDevice;
 
@@ -115,16 +113,18 @@ namespace AlumnoEjemplos.MiGrupo
             ///////////////MODIFIERS//////////////////
 
             //Crear un modifier para un valor FLOAT
-            GuiController.Instance.Modifiers.addFloat("valorFloat", -50f, 200f, 0f);
-
+            GuiController.Instance.Modifiers.addFloat("camaraY", 0f, 1500f, 400f);
+            GuiController.Instance.Modifiers.addFloat("camaraZ", 0f, 1500f, 1000f);
+            float camaraY = (float)GuiController.Instance.Modifiers["camaraY"];
+            float camaraZ = (float)GuiController.Instance.Modifiers["camaraZ"];
             //Crear un modifier para un ComboBox con opciones
             string[] opciones = new string[]{"opcion1", "opcion2", "opcion3"};
             GuiController.Instance.Modifiers.addInterval("valorIntervalo", opciones, 0);
 
             //Crear un modifier para modificar un vértice
             GuiController.Instance.Modifiers.addVertex3f("valorVertice", new Vector3(-100, -100, -100), new Vector3(50, 50, 50), new Vector3(0, 0, 0));
-
-            Camara.Iniciar(nave.Modelo.Position);
+            
+            camaraTerceraPersona.Iniciar(nave.Modelo.Position,camaraY,camaraZ);
 
             List<string> lista = new List<string>();
 
@@ -199,6 +199,9 @@ namespace AlumnoEjemplos.MiGrupo
                 Device d3dDevice = GuiController.Instance.D3dDevice;
 
                 axisRotation += AXIS_ROTATION_SPEED*elapsedTime;
+                float camaraY = (float)GuiController.Instance.Modifiers["camaraY"];
+                float camaraZ = (float)GuiController.Instance.Modifiers["camaraZ"];
+                camaraTerceraPersona.CambiarCamara(camaraY, camaraZ);
                 //Obtener valor de UserVar (hay que castear)
                 int valor = (int) GuiController.Instance.UserVars.getValue("variablePrueba");
 

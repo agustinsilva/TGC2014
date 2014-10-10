@@ -332,6 +332,7 @@ namespace Examples.Shaders.WorkshopShaders
             g_pRenderTarget5.Dispose();
             g_pDepthStencil.Dispose();
             g_pVBV3D.Dispose();
+            Cursor.Show();
 
         }
 
