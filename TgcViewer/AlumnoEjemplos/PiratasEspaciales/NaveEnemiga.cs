@@ -104,6 +104,7 @@ namespace AlumnoEjemplos.PiratasEspaciales
             {
                 //Disparar. Tambien deberia rotar para que el disparo vaya bien
                 Disparo disparo = new Disparo(Modelo);
+                disparo.TestDisparo.moveOrientedY(DireccionObjetivo.X);
                 Disparos.Add(disparo);
             }
         }
