@@ -6,7 +6,9 @@ Repositorio para Tecnicas de Graficos por Computadora
 Asignarse cosas para hacer escribiendo el nombre al lado de la opcion.
 
 Cosas por hacer:
+
 Arreglar el giro de las naves enemigas para que tenga direccion a la nave principal.
+Pedir motion blur para reemplazar por blur actual.
 Crear un escenario con estrellas (sky box).
 Configurar la deteccion de colisiones(tanto de disparos como de naves).
 Cada nave debe tener al menos dos luces dinámicas (con ambient + diffuse + specular).
