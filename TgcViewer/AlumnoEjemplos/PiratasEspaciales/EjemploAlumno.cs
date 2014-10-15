@@ -41,6 +41,7 @@ namespace AlumnoEjemplos.MiGrupo
         const float AXIS_ROTATION_SPEED = 0.5f;
         float axisRotation = 0f;
         TgcMesh sol;
+        TgcScene Universo;
         
         #region Descripcion del Plugin
         /// <summary>
@@ -85,6 +86,8 @@ namespace AlumnoEjemplos.MiGrupo
             //Creacion de una esfera
             string sphere = GuiController.Instance.ExamplesMediaDir + "ModelosTgc\\Sphere\\Sphere-TgcScene.xml";
             TgcSceneLoader loader = new TgcSceneLoader();
+
+            Universo = loader.loadSceneFromFile(GuiController.Instance.ExamplesMediaDir + "MeshCreator\\Scenes\\Universo\\Universo-TgcScene.xml");
 
             //Cargado texturas para nave
 
@@ -145,10 +148,15 @@ namespace AlumnoEjemplos.MiGrupo
                 string element = lista[i];
             }
 
-            GuiController.Instance.BackgroundColor = Color.Black;
+            //GuiController.Instance.BackgroundColor = Color.Black;
             currentFile = null;
             GuiController.Instance.Modifiers.addFile("MP3-File", GuiController.Instance.ExamplesMediaDir + "Music\\I am The Money.mp3", "MP3s|*.mp3");           
             obstaculos.Add(sol);
+
+            foreach (TgcMesh mesh in Universo.Meshes)
+            {
+                obstaculos.Add(mesh);
+            }
 
             GuiController.Instance.CustomRenderEnabled = true;
             CustomVertex.PositionTextured[] screenQuadVertices = new CustomVertex.PositionTextured[]
@@ -267,6 +275,36 @@ namespace AlumnoEjemplos.MiGrupo
                 nave.Renderizar(elapsedTime, obstaculos);
                 NaveEnemiga1.MoverHaciaObjetivo(elapsedTime, nave.Modelo.Position);
                 NaveEnemiga1.Renderizar(elapsedTime, obstaculos);
+
+
+                #region PRUEBA COLISION SCENE
+
+                bool collisionFound = false;
+                foreach (TgcMesh mesh in Universo.Meshes)
+                {
+                    if (mesh.Name == "Universo") continue;
+                    //Los dos BoundingBox que vamos a testear
+                    TgcBoundingBox mainMeshBoundingBox = nave.Modelo.BoundingBox;
+                    TgcBoundingBox sceneMeshBoundingBox = mesh.BoundingBox;
+
+                    //Ejecutar algoritmo de detección de colisiones
+                    TgcCollisionUtils.BoxBoxResult collisionResult = TgcCollisionUtils.classifyBoxBox(mainMeshBoundingBox, sceneMeshBoundingBox);
+
+                    //Hubo colisión con un objeto. Guardar resultado y abortar loop.
+                    if (collisionResult != TgcCollisionUtils.BoxBoxResult.Afuera)
+                    {
+                        collisionFound = true;
+                        break;
+                    }
+                }
+
+                //Si hubo alguna colisión, entonces restaurar la posición original del mesh
+                if (collisionFound)
+                {
+                    //nave.Modelo.rotateY(180.0f);
+                    nave.Modelo.moveOrientedY(10000f * elapsedTime);
+                } 
+                #endregion
                 
                 sol.BoundingBox.transform(sol.Transform);
                 sol.Transform = TransformarSol(elapsedTime);
@@ -274,6 +312,7 @@ namespace AlumnoEjemplos.MiGrupo
                 //Limpiamos todas las transformaciones con la Matrix identidad
                 sol.render();
                 d3dDevice.Transform.World = Matrix.Identity;
+                Universo.renderAll();
             
            
         }
@@ -290,6 +329,7 @@ namespace AlumnoEjemplos.MiGrupo
             screenQuadVB.Dispose();
             renderTarget2D.Dispose();
             NaveEnemiga1.Modelo.dispose();
+            Universo.disposeAll();
         }
 
         private void drawSceneToRenderTarget(Device d3dDevice,float elapsedTime)
@@ -311,6 +351,7 @@ namespace AlumnoEjemplos.MiGrupo
                 GuiController.Instance.ThirdPersonCamera.Target = nave.Modelo.Position;
                 //Limpiamos todas las transformaciones con la Matrix identidad
                 sol.render();
+                Universo.renderAll();
 
                 sol.BoundingBox.render();
                 NaveEnemiga1.Renderizar(elapsedTime, obstaculos);
