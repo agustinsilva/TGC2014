@@ -46,6 +46,8 @@ namespace AlumnoEjemplos.PiratasEspaciales
         }
         public void Actualizar(float tiempoRenderizado,List<TgcMesh> obstaculos)
         {
+
+            
             if (TestDisparo.AutoTransformEnable)
             {
                 TestDisparo.moveOrientedY(-Intensidad * tiempoRenderizado * Velocidad);

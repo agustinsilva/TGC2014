@@ -73,9 +73,6 @@ namespace AlumnoEjemplos.MiGrupo
 
         #endregion
 
-        /// <summary>
-        /// Método que se llama una sola vez,  al principio cuando se ejecuta el ejemplo.
-        /// </summary>
         public override void init()
         {
             //Device de DirectX para crear primitivas
@@ -151,12 +148,13 @@ namespace AlumnoEjemplos.MiGrupo
             //GuiController.Instance.BackgroundColor = Color.Black;
             currentFile = null;
             GuiController.Instance.Modifiers.addFile("MP3-File", GuiController.Instance.ExamplesMediaDir + "Music\\I am The Money.mp3", "MP3s|*.mp3");           
-            obstaculos.Add(sol);
+           
+            //obstaculos.Add(sol);
 
-            foreach (TgcMesh mesh in Universo.Meshes)
-            {
-                obstaculos.Add(mesh);
-            }
+            //foreach (TgcMesh mesh in Universo.Meshes)
+            //{
+            //    obstaculos.Add(mesh);
+            //}
 
             GuiController.Instance.CustomRenderEnabled = true;
             CustomVertex.PositionTextured[] screenQuadVertices = new CustomVertex.PositionTextured[]
@@ -179,8 +177,6 @@ namespace AlumnoEjemplos.MiGrupo
 
             //Configurar Technique dentro del shader
             effect.Technique = "BlurTechnique";
-
-
         }
 
         private void LoadMp3(string filePath)
@@ -194,16 +190,10 @@ namespace AlumnoEjemplos.MiGrupo
                 GuiController.Instance.Mp3Player.FileName = currentFile;               
             }
         }
-        /// <summary>
-        /// Método que se llama cada vez que hay que refrescar la pantalla.
-        /// Escribir aquí todo el código referido al renderizado.
-        /// Borrar todo lo que no haga falta
-        /// </summary>
-        /// <param name="elapsedTime">Tiempo en segundos transcurridos desde el último frame</param>
+
+        // <param name="elapsedTime">Tiempo en segundos transcurridos desde el último frame</param>
         public override void render(float elapsedTime)
         {
-                //Device de DirectX para renderizar
-            
                 Device d3dDevice = GuiController.Instance.D3dDevice;
 
                 axisRotation += AXIS_ROTATION_SPEED*elapsedTime;
@@ -277,33 +267,11 @@ namespace AlumnoEjemplos.MiGrupo
                 NaveEnemiga1.Renderizar(elapsedTime, obstaculos);
 
 
-                #region PRUEBA COLISION SCENE
+                #region Detectar Colisiones
 
-                bool collisionFound = false;
-                foreach (TgcMesh mesh in Universo.Meshes)
-                {
-                    if (mesh.Name == "Universo") continue;
-                    //Los dos BoundingBox que vamos a testear
-                    TgcBoundingBox mainMeshBoundingBox = nave.Modelo.BoundingBox;
-                    TgcBoundingBox sceneMeshBoundingBox = mesh.BoundingBox;
+                ColisionNave(elapsedTime);
+                ColisionDisparos(elapsedTime);
 
-                    //Ejecutar algoritmo de detección de colisiones
-                    TgcCollisionUtils.BoxBoxResult collisionResult = TgcCollisionUtils.classifyBoxBox(mainMeshBoundingBox, sceneMeshBoundingBox);
-
-                    //Hubo colisión con un objeto. Guardar resultado y abortar loop.
-                    if (collisionResult != TgcCollisionUtils.BoxBoxResult.Afuera)
-                    {
-                        collisionFound = true;
-                        break;
-                    }
-                }
-
-                //Si hubo alguna colisión, entonces restaurar la posición original del mesh
-                if (collisionFound)
-                {
-                    //nave.Modelo.rotateY(180.0f);
-                    nave.Modelo.moveOrientedY(10000f * elapsedTime);
-                } 
                 #endregion
                 
                 sol.BoundingBox.transform(sol.Transform);
@@ -317,10 +285,55 @@ namespace AlumnoEjemplos.MiGrupo
            
         }
 
-        /// <summary>
-        /// Método que se llama cuando termina la ejecución del ejemplo.
-        /// Hacer dispose() de todos los objetos creados.
-        /// </summary>
+        private void ColisionNave(float elapsedTime)
+        {
+            TgcBoundingBox NaveBBox = nave.Modelo.BoundingBox;
+            TgcBoundingBox EnemigoBBox = NaveEnemiga1.Modelo.BoundingBox;
+
+            if (TgcCollisionUtils.classifyBoxBox(NaveBBox, EnemigoBBox) != TgcCollisionUtils.BoxBoxResult.Afuera) // CONVERTIR EN UN FOREACH CUANDO HAYA LISTA DE ENEMIGOS
+            {
+                NaveEnemiga1.Modelo.Position -= new Vector3(-50, 0, 0);
+                return;
+            }
+
+            foreach (TgcMesh mesh in Universo.Meshes)
+            {
+                if (mesh.Name == "Universo") continue;
+                               
+                TgcBoundingBox SceneBBox = mesh.BoundingBox;
+                TgcCollisionUtils.BoxBoxResult collisionResult = TgcCollisionUtils.classifyBoxBox(NaveBBox, SceneBBox);
+
+                if (collisionResult != TgcCollisionUtils.BoxBoxResult.Afuera)
+                {
+                    nave.Modelo.moveOrientedY(10000f * elapsedTime);
+                    return;
+                }
+            }
+        }
+
+        private void ColisionDisparos(float elapsedTime)
+        {
+            TgcBoundingBox NaveBBox = nave.Modelo.BoundingBox;
+            TgcBoundingBox EnemigoBBox = NaveEnemiga1.Modelo.BoundingBox;
+
+            foreach (Disparo disp in nave.Disparos)
+            {
+                TgcBoundingBox dispBBox = disp.TestDisparo.BoundingBox;
+                
+                if(TgcCollisionUtils.classifyBoxBox(EnemigoBBox, dispBBox) != TgcCollisionUtils.BoxBoxResult.Afuera)
+                {
+                    disp.EnJuego = false;
+                    disp.TestDisparo.dispose();
+                    //DISMINUIR VIDA O DESTRUIR ENEMIGO! EFECTO PARTICULAS!
+                    NaveEnemiga1.Modelo.Enabled = false;
+                }
+                
+            }
+            
+            
+            
+        }
+
         public override void close()
         {
             sol.dispose();
