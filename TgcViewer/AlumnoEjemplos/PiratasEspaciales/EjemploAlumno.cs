@@ -42,6 +42,8 @@ namespace AlumnoEjemplos.MiGrupo
         float axisRotation = 0f;
         TgcMesh sol;
         TgcScene Universo;
+
+        TgcBox lightMesh;
         
         #region Descripcion del Plugin
         /// <summary>
@@ -111,6 +113,23 @@ namespace AlumnoEjemplos.MiGrupo
 
 
             ///////////////MODIFIERS//////////////////
+            //Mesh para la luz
+            lightMesh = TgcBox.fromSize(new Vector3(10, 10, 10), Color.Red);
+
+            //modifiers luz
+            GuiController.Instance.Modifiers.addBoolean("lightEnable", "lightEnable", true);
+            GuiController.Instance.Modifiers.addVertex3f("lightPos", new Vector3(-200, -100, -200), new Vector3(200, 200, 300), new Vector3(60, 35, 250));
+            GuiController.Instance.Modifiers.addColor("lightColor", Color.White);
+            GuiController.Instance.Modifiers.addFloat("lightIntensity", 0, 150, 75);
+            GuiController.Instance.Modifiers.addFloat("lightAttenuation", 0.1f, 2, 0.27f);
+            GuiController.Instance.Modifiers.addFloat("specularEx", 0, 20, 9f);
+
+            //Modifiers de material
+            GuiController.Instance.Modifiers.addColor("mEmissive", Color.Black);
+            GuiController.Instance.Modifiers.addColor("mAmbient", Color.White);
+            GuiController.Instance.Modifiers.addColor("mDiffuse", Color.White);
+            GuiController.Instance.Modifiers.addColor("mSpecular", Color.White);
+
 
             //Crear un modifier para un valor FLOAT
             GuiController.Instance.Modifiers.addFloat("camaraY", 0f, 1500f, 400f);
@@ -261,8 +280,68 @@ namespace AlumnoEjemplos.MiGrupo
 
                 //Luego tomamos lo dibujado antes y lo combinamos con una textura con efecto de alarma
                 drawPostProcess(d3dDevice);
+
+
+                //Habilitar luz
+                bool lightEnable = (bool)GuiController.Instance.Modifiers["lightEnable"];
+                Effect currentShader;
+                if (lightEnable)
+                {
+                    //Con luz: Cambiar el shader actual por el shader default que trae el framework para iluminacion dinamica con PointLight
+                    currentShader = GuiController.Instance.Shaders.TgcMeshPointLightShader;
+                }
+                else
+                {
+                    //Sin luz: Restaurar shader default
+                    currentShader = GuiController.Instance.Shaders.TgcMeshShader;
+                }
+
+                //Aplicar a cada mesh el shader actual
+                foreach (TgcMesh mesh in Universo.Meshes)
+                {
+                    mesh.Effect = currentShader;
+                    //El Technique depende del tipo RenderType del mesh
+                    mesh.Technique = GuiController.Instance.Shaders.getTgcMeshTechnique(mesh.RenderType);
+                }
                 
+                sol.Effect = currentShader;
+                sol.Technique = GuiController.Instance.Shaders.getTgcMeshTechnique(sol.RenderType);
+
+                //Actualzar posición de la luz
+                Vector3 lightPos = nave.Modelo.Position;
+                lightMesh.Position = lightPos;
+
+                //Renderizar meshes
+                foreach (TgcMesh mesh in Universo.Meshes)
+                {
+                    if (lightEnable)
+                    {
+                        //Cargar variables shader de la luz
+                        mesh.Effect.SetValue("lightColor", ColorValue.FromColor((Color)GuiController.Instance.Modifiers["lightColor"]));
+                        mesh.Effect.SetValue("lightPosition", TgcParserUtils.vector3ToFloat4Array(lightPos));
+                        mesh.Effect.SetValue("eyePosition", TgcParserUtils.vector3ToFloat4Array(GuiController.Instance.FpsCamera.getPosition()));
+                        mesh.Effect.SetValue("lightIntensity", (float)GuiController.Instance.Modifiers["lightIntensity"]);
+                        mesh.Effect.SetValue("lightAttenuation", (float)GuiController.Instance.Modifiers["lightAttenuation"]);
+
+                        //Cargar variables de shader de Material. El Material en realidad deberia ser propio de cada mesh. Pero en este ejemplo se simplifica con uno comun para todos
+                        mesh.Effect.SetValue("materialEmissiveColor", ColorValue.FromColor((Color)GuiController.Instance.Modifiers["mEmissive"]));
+                        mesh.Effect.SetValue("materialAmbientColor", ColorValue.FromColor((Color)GuiController.Instance.Modifiers["mAmbient"]));
+                        mesh.Effect.SetValue("materialDiffuseColor", ColorValue.FromColor((Color)GuiController.Instance.Modifiers["mDiffuse"]));
+                        mesh.Effect.SetValue("materialSpecularColor", ColorValue.FromColor((Color)GuiController.Instance.Modifiers["mSpecular"]));
+                        mesh.Effect.SetValue("materialSpecularExp", (float)GuiController.Instance.Modifiers["specularEx"]);
+                    }
+
+                    //Renderizar modelo
+                    mesh.render();
+                }
+
+
+                //Renderizar mesh de luz
+                lightMesh.render();
+
                 nave.Renderizar(elapsedTime, obstaculos);
+
+      
                 NaveEnemiga1.MoverHaciaObjetivo(elapsedTime, nave.Modelo.Position);
                 NaveEnemiga1.Renderizar(elapsedTime, obstaculos);
 

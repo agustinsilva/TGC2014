@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Drawing;
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
 using Microsoft.DirectX.DirectInput;
@@ -9,11 +10,13 @@ using TgcViewer;
 using TgcViewer.Utils.Input;
 using TgcViewer.Utils.TgcGeometry;
 using TgcViewer.Utils.TgcSceneLoader;
+using TgcViewer.Utils.Shaders;
 
 namespace AlumnoEjemplos.PiratasEspaciales
 {
     public class Nave
     {
+  
         public float VelocidadMovimiento { get; set; }
         public float Flotacion { get; set; }
         public float DireccionFlotacion { get; set; }
@@ -45,6 +48,9 @@ namespace AlumnoEjemplos.PiratasEspaciales
             this.Modelo = naves.Meshes[0];
 
             this.Modelo.move(0,1000,1500);
+
+          
+
         }
 
         public void Movimiento(float tiempoRenderizado, List<TgcMesh> obstaculos)
@@ -207,6 +213,8 @@ namespace AlumnoEjemplos.PiratasEspaciales
             }
             //la flotacion requiere mejoras. Agustin S.
             //this.FlotacionEspacial(tiempoRenderizado);
+
+            
             Modelo.render();
         }
 
