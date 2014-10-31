@@ -67,7 +67,6 @@ namespace AlumnoEjemplos.PiratasEspaciales
             Vector3 movimiento = new Vector3(0, 0, 0);
             Vector3 ultimaPosicion = new Vector3(0, 0, 0);
             Vector3 ultimaPosLuz1 = new Vector3(0, 0, 0);
-            float distanciaALuz = 85f;
 
             //tiempos de renderizado para calcular aceleracion con limite
             if (RendAcumuladoS < 10) RendAcumuladoS += tiempoRenderizado;    //tiempo que se estuvo yendo hacia atras
@@ -161,7 +160,7 @@ namespace AlumnoEjemplos.PiratasEspaciales
                 float nuevaPosZ = (float)(Modelo.Position.Z + Math.Sin((double)Geometry.DegreeToRadian(rotar * tiempoRenderizado)) * (lightMesh.Position.X - Modelo.Position.X) + Math.Cos((double)Geometry.DegreeToRadian(rotar * tiempoRenderizado)) * (lightMesh.Position.Z - Modelo.Position.Z));
                 Vector3 nuevaPos = new Vector3(nuevaPosX, lightMesh.Position.Y, nuevaPosZ);
                 lightMesh.move(lightMesh.Position - nuevaPos);
-               
+                GuiController.Instance.ThirdPersonCamera.rotateY(Geometry.DegreeToRadian(rotar * tiempoRenderizado));
 
             }
 
