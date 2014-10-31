@@ -23,6 +23,7 @@ namespace AlumnoEjemplos.PiratasEspaciales
         public float VelocidadRotacion { get; set; }
         public float TiempoParado { get; set; }
         public TgcMesh Modelo { get; set; }
+        public TgcBox lightMesh { get; set; }
         public List<Disparo> Disparos { get; set; }
         public float TiempoRecarga { get; set; }
         public bool Saltando { get; set; }
@@ -45,11 +46,14 @@ namespace AlumnoEjemplos.PiratasEspaciales
 
         public void Iniciar(TgcScene naves)
         {
+            //Mesh para la luz
+            lightMesh = TgcBox.fromSize(new Vector3(5, 5, 5), Color.White);
+
+
             this.Modelo = naves.Meshes[0];
-
             this.Modelo.move(0,1000,1500);
-
-          
+            Vector3 corrector = new Vector3(0, 0, 85);
+            lightMesh.Position = this.Modelo.Position + corrector;
 
         }
 
@@ -61,6 +65,9 @@ namespace AlumnoEjemplos.PiratasEspaciales
             float rotar = 0f;
             TgcD3dInput input = GuiController.Instance.D3dInput;
             Vector3 movimiento = new Vector3(0, 0, 0);
+            Vector3 ultimaPosicion = new Vector3(0, 0, 0);
+            Vector3 ultimaPosLuz1 = new Vector3(0, 0, 0);
+            float distanciaALuz = 85f;
 
             //tiempos de renderizado para calcular aceleracion con limite
             if (RendAcumuladoS < 10) RendAcumuladoS += tiempoRenderizado;    //tiempo que se estuvo yendo hacia atras
@@ -79,8 +86,11 @@ namespace AlumnoEjemplos.PiratasEspaciales
             if (input.keyDown(Key.Up) || input.keyDown(Key.W))
             {
                 seMovio = true;
+                ultimaPosicion = Modelo.Position;
+                ultimaPosLuz1 = lightMesh.Position;
                 mover = -VelocidadMovimiento - 12 * (float)Math.Pow(RendAcumuladoW, 2);
                 Modelo.moveOrientedY(mover * tiempoRenderizado);
+                lightMesh.moveOrientedY(mover * tiempoRenderizado);
             }
             else
             {
@@ -89,8 +99,11 @@ namespace AlumnoEjemplos.PiratasEspaciales
             if (input.keyDown(Key.Down) || input.keyDown(Key.S))
             {
                 seMovio = true;
+                ultimaPosicion = Modelo.Position;
+                ultimaPosLuz1 = lightMesh.Position;
                 mover = VelocidadMovimiento + 12 * (float)Math.Pow(RendAcumuladoS, 2);
                 Modelo.moveOrientedY(mover * tiempoRenderizado);
+                lightMesh.moveOrientedY(mover * tiempoRenderizado);
             }
             else
             {
@@ -99,19 +112,25 @@ namespace AlumnoEjemplos.PiratasEspaciales
             if ( input.keyDown(Key.R))
             {
                 seMovio = true;
+                ultimaPosicion = Modelo.Position;
+                ultimaPosLuz1 = lightMesh.Position;
                 mover = -VelocidadMovimiento;
                 Modelo.move(0,mover*tiempoRenderizado,0);
+                lightMesh.move(0, mover * tiempoRenderizado, 0);
             }
             else if (input.keyDown(Key.T))
             {
                 seMovio = true;
+                ultimaPosicion = Modelo.Position;
+                ultimaPosLuz1 = lightMesh.Position;
                 mover = VelocidadMovimiento;
                 Modelo.move(0, mover * tiempoRenderizado, 0);
+                lightMesh.move(0, mover * tiempoRenderizado, 0);
             }
 
             if (seMovio)
             {
-                Vector3 ultimaPosicion = Modelo.Position;
+                
                 bool colisiono = false;
                 foreach (TgcMesh obstaculo in obstaculos)
                 {
@@ -127,6 +146,7 @@ namespace AlumnoEjemplos.PiratasEspaciales
                 {
 
                     Modelo.Position = ultimaPosicion;
+                    lightMesh.Position = ultimaPosLuz1;
 
                 }                              
             }
@@ -134,8 +154,15 @@ namespace AlumnoEjemplos.PiratasEspaciales
             if (rotando)
             {
                 Modelo.rotateY(Geometry.DegreeToRadian(rotar * tiempoRenderizado));
-                GuiController.Instance.ThirdPersonCamera.rotateY(Geometry.DegreeToRadian(rotar * tiempoRenderizado));
-;
+                lightMesh.rotateY(Geometry.DegreeToRadian(rotar * tiempoRenderizado));
+
+               
+                float nuevaPosX = (float)(Modelo.Position.X + Math.Cos((double)Geometry.DegreeToRadian(rotar * tiempoRenderizado)) * (lightMesh.Position.X - Modelo.Position.X) - Math.Sin((double)Geometry.DegreeToRadian(rotar * tiempoRenderizado)) * (lightMesh.Position.Z - Modelo.Position.Z));
+                float nuevaPosZ = (float)(Modelo.Position.Z + Math.Sin((double)Geometry.DegreeToRadian(rotar * tiempoRenderizado)) * (lightMesh.Position.X - Modelo.Position.X) + Math.Cos((double)Geometry.DegreeToRadian(rotar * tiempoRenderizado)) * (lightMesh.Position.Z - Modelo.Position.Z));
+                Vector3 nuevaPos = new Vector3(nuevaPosX, lightMesh.Position.Y, nuevaPosZ);
+                lightMesh.move(lightMesh.Position - nuevaPos);
+               
+
             }
 
             
@@ -144,6 +171,7 @@ namespace AlumnoEjemplos.PiratasEspaciales
         public void FlotacionEspacial(float tiempoRenderizado)
         {
             Modelo.move(0, Flotacion * DireccionFlotacion * tiempoRenderizado * 2, 0);
+            lightMesh.move(0, Flotacion * DireccionFlotacion * tiempoRenderizado * 2, 0);
             if (FastMath.Abs(Modelo.Position.Y) > 7f)
             {
                 DireccionFlotacion *= -1;
@@ -190,6 +218,7 @@ namespace AlumnoEjemplos.PiratasEspaciales
 
         public void Renderizar(float tiempoRenderizado,List<TgcMesh> obstaculos)
         {
+
             SaltaHiperEspacio();
             this.Movimiento(tiempoRenderizado,obstaculos);
             if (!Saltando) 
@@ -214,7 +243,9 @@ namespace AlumnoEjemplos.PiratasEspaciales
             //la flotacion requiere mejoras. Agustin S.
             //this.FlotacionEspacial(tiempoRenderizado);
 
-            
+            //Renderizar mesh de luz
+            lightMesh.render();
+
             Modelo.render();
         }
 

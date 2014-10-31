@@ -43,7 +43,7 @@ namespace AlumnoEjemplos.MiGrupo
         TgcMesh sol;
         TgcScene Universo;
 
-        TgcBox lightMesh;
+        
         
         #region Descripcion del Plugin
         /// <summary>
@@ -113,12 +113,11 @@ namespace AlumnoEjemplos.MiGrupo
 
 
             ///////////////MODIFIERS//////////////////
-            //Mesh para la luz
-            lightMesh = TgcBox.fromSize(new Vector3(10, 10, 10), Color.Red);
+            
 
             //modifiers luz
             GuiController.Instance.Modifiers.addBoolean("lightEnable", "lightEnable", true);
-            GuiController.Instance.Modifiers.addVertex3f("lightPos", new Vector3(-200, -100, -200), new Vector3(200, 200, 300), new Vector3(60, 35, 250));
+            //GuiController.Instance.Modifiers.addVertex3f("lightPos", new Vector3(-200, -100, -200), new Vector3(200, 200, 300), new Vector3(60, 35, 250));
             GuiController.Instance.Modifiers.addColor("lightColor", Color.White);
             GuiController.Instance.Modifiers.addFloat("lightIntensity", 0, 150, 75);
             GuiController.Instance.Modifiers.addFloat("lightAttenuation", 0.1f, 2, 0.27f);
@@ -306,10 +305,11 @@ namespace AlumnoEjemplos.MiGrupo
                 
                 sol.Effect = currentShader;
                 sol.Technique = GuiController.Instance.Shaders.getTgcMeshTechnique(sol.RenderType);
+                nave.Modelo.Effect = currentShader;
+                nave.Modelo.Technique = GuiController.Instance.Shaders.getTgcMeshTechnique(nave.Modelo.RenderType);
 
                 //Actualzar posición de la luz
-                Vector3 lightPos = nave.Modelo.Position;
-                lightMesh.Position = lightPos;
+                Vector3 lightPos = nave.lightMesh.Position;
 
                 //Renderizar meshes
                 foreach (TgcMesh mesh in Universo.Meshes)
@@ -335,9 +335,6 @@ namespace AlumnoEjemplos.MiGrupo
                     mesh.render();
                 }
 
-
-                //Renderizar mesh de luz
-                lightMesh.render();
 
                 nave.Renderizar(elapsedTime, obstaculos);
 
@@ -385,6 +382,7 @@ namespace AlumnoEjemplos.MiGrupo
                 if (collisionResult != TgcCollisionUtils.BoxBoxResult.Afuera)
                 {
                     nave.Modelo.moveOrientedY(10000f * elapsedTime);
+                    nave.lightMesh.moveOrientedY(10000f * elapsedTime);
                     return;
                 }
             }
