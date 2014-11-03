@@ -95,7 +95,7 @@ namespace AlumnoEjemplos.MiGrupo
             TgcScene modeloNaveEnemiga = loader.loadSceneFromFile(GuiController.Instance.ExamplesMediaDir + "MeshCreator\\Meshes\\Vehiculos\\AvionCaza\\AvionCaza-TgcScene.xml");
             TgcScene modelosDeNaves = loader.loadSceneFromFile(GuiController.Instance.ExamplesMediaDir + "MeshCreator\\Meshes\\Vehiculos\\AvionCaza\\AvionCaza-TgcScene.xml");
             
-            lights = new Vector3[2];
+            lights = new Vector3[4];    //cantidad de naves * 2
 
             nave.Iniciar(modelosDeNaves);
             
@@ -316,6 +316,10 @@ namespace AlumnoEjemplos.MiGrupo
                 //un array)
                 lights[0] = nave.lightMesh.Position;
                 lights[1] = nave.lightMesh2.Position;
+
+                //agregar todas las naves enemigas a un [] para hacer un foreach
+                lights[2] = NaveEnemiga1.lightMesh.Position;
+                lights[3] = NaveEnemiga1.lightMesh2.Position;
 
                 //Renderizar meshes
                 foreach (TgcMesh mesh in Universo.Meshes)
