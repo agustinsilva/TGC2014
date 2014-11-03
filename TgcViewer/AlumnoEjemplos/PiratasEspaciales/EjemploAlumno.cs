@@ -42,6 +42,7 @@ namespace AlumnoEjemplos.MiGrupo
         float axisRotation = 0f;
         TgcMesh sol;
         TgcScene Universo;
+        Vector3[] lights;
 
         
         
@@ -94,7 +95,10 @@ namespace AlumnoEjemplos.MiGrupo
             TgcScene modeloNaveEnemiga = loader.loadSceneFromFile(GuiController.Instance.ExamplesMediaDir + "MeshCreator\\Meshes\\Vehiculos\\AvionCaza\\AvionCaza-TgcScene.xml");
             TgcScene modelosDeNaves = loader.loadSceneFromFile(GuiController.Instance.ExamplesMediaDir + "MeshCreator\\Meshes\\Vehiculos\\AvionCaza\\AvionCaza-TgcScene.xml");
             
+            lights = new Vector3[2];
+
             nave.Iniciar(modelosDeNaves);
+            
 
             NaveEnemiga1.Iniciar(modeloNaveEnemiga, nave.Modelo.Position);
                 //Cargado de textura para el sol
@@ -308,17 +312,20 @@ namespace AlumnoEjemplos.MiGrupo
                 nave.Modelo.Effect = currentShader;
                 nave.Modelo.Technique = GuiController.Instance.Shaders.getTgcMeshTechnique(nave.Modelo.RenderType);
 
-                //Actualzar posición de la luz
-                Vector3 lightPos = nave.lightMesh.Position;
+                //Actualzar posición de la luz (for each nave, o de 1 a la cant de naves, guardar, nave.light1.pos y nave.light2.pos en 
+                //un array)
+                lights[0] = nave.lightMesh.Position;
+                lights[1] = nave.lightMesh2.Position;
 
                 //Renderizar meshes
                 foreach (TgcMesh mesh in Universo.Meshes)
                 {
                     if (lightEnable)
                     {
+                        Vector3 light = getClosestLight(mesh.BoundingBox.calculateBoxCenter());
                         //Cargar variables shader de la luz
                         mesh.Effect.SetValue("lightColor", ColorValue.FromColor((Color)GuiController.Instance.Modifiers["lightColor"]));
-                        mesh.Effect.SetValue("lightPosition", TgcParserUtils.vector3ToFloat4Array(lightPos));
+                        mesh.Effect.SetValue("lightPosition", TgcParserUtils.vector3ToFloat4Array(light));
                         mesh.Effect.SetValue("eyePosition", TgcParserUtils.vector3ToFloat4Array(GuiController.Instance.FpsCamera.getPosition()));
                         mesh.Effect.SetValue("lightIntensity", (float)GuiController.Instance.Modifiers["lightIntensity"]);
                         mesh.Effect.SetValue("lightAttenuation", (float)GuiController.Instance.Modifiers["lightAttenuation"]);
@@ -361,6 +368,26 @@ namespace AlumnoEjemplos.MiGrupo
            
         }
 
+        /// Devuelve la luz mas cercana a la posicion especificada
+        /// </summary>
+        private Vector3 getClosestLight(Vector3 pos)
+        {
+            float minDist = float.MaxValue;
+            Vector3 minLight = new Vector3(0, 0, 0);
+
+            foreach (Vector3 light in lights)
+            {
+                float distSq = Vector3.LengthSq(pos - light);
+                if (distSq < minDist)
+                {
+                    minDist = distSq;
+                    minLight = light;
+                }
+            }
+
+            return minLight;
+        }
+
         private void ColisionNave(float elapsedTime)
         {
             TgcBoundingBox NaveBBox = nave.Modelo.BoundingBox;
@@ -383,6 +410,7 @@ namespace AlumnoEjemplos.MiGrupo
                 {
                     nave.Modelo.moveOrientedY(10000f * elapsedTime);
                     nave.lightMesh.moveOrientedY(10000f * elapsedTime);
+                    nave.lightMesh2.moveOrientedY(10000f * elapsedTime);
                     return;
                 }
             }
